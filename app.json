@@ -1,5 +1,6 @@
 {
   "expo": {
+    "newArchEnabled": true,
     "name": "fund-flex-app",
     "slug": "fund-flex-app",
     "version": "1.0.0",
