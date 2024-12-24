@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { View } from 'react-native';
 
 import { SignInButton, Logo } from '~/components/features/auth';
@@ -22,7 +23,9 @@ export default function SignInScreen() {
   };
 
   return (
-    <View className="flex-1 justify-center gap-y-8 px-4 py-6">
+    <View
+      className="flex-1 justify-center gap-y-8 px-4 py-6"
+      style={{ backgroundColor: Constants.expoConfig?.splash?.backgroundColor }}>
       {/* Logo and Title Section */}
       <View className="items-center gap-y-4">
         <Logo />

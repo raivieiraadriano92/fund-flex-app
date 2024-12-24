@@ -41,11 +41,9 @@ export function SignInButton({ provider, isLoading = false, onPress }: SignInBut
       variant={provider === 'anonymous' ? 'outline' : 'solid'}
       disabled={isLoading}
       onPress={onPress}>
-      <View className="flex-row items-center gap-2">
-        {getProviderIcon()}
-        <Text>{getProviderLabel()}</Text>
-        <ActivityIndicator animating={isLoading} />
-      </View>
+      {getProviderIcon()}
+      <Text>{getProviderLabel()}</Text>
+      <ActivityIndicator animating={isLoading} />
     </Button>
   );
 }
