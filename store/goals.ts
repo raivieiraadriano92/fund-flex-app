@@ -1,0 +1,112 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+
+import { useAuthStore } from './auth';
+
+import { supabase } from '~/core/api/supabase';
+import type { Goal, GoalFormData } from '~/core/types/goal';
+
+interface GoalWithProgress extends Goal {
+  current_amount: number;
+}
+
+interface GoalsState {
+  goals: GoalWithProgress[];
+}
+
+interface GoalsActions {
+  fetchGoals: () => Promise<void>;
+  createGoal: (data: GoalFormData) => Promise<void>;
+  updateGoal: (id: string, data: GoalFormData) => Promise<void>;
+  deleteGoal: (id: string) => Promise<void>;
+}
+
+type GoalsStore = GoalsState & GoalsActions;
+
+export const useGoalsStore = create<GoalsStore>()(
+  persist(
+    (set) => ({
+      goals: [],
+
+      fetchGoals: async () => {
+        const { data } = await supabase
+          .from('goals')
+          .select(
+            `
+            *,
+            income_amount: transactions(amount).eq(type, 'income'),
+            expense_amount: transactions(amount).eq(type, 'expense')
+          `
+          )
+          .order('title');
+
+        // Transform the data to calculate net amount
+        const goalsWithProgress =
+          data?.map((goal) => ({
+            ...goal,
+            current_amount:
+              (goal.income_amount?.sum?.amount ?? 0) - (goal.expense_amount?.sum?.amount ?? 0),
+          })) ?? [];
+
+        set({ goals: goalsWithProgress });
+      },
+
+      createGoal: async (data) => {
+        const userId = useAuthStore.getState().session?.user.id;
+        const { data: newGoal } = await supabase
+          .from('goals')
+          .insert([{ ...data, user_id: userId }])
+          .select()
+          .single();
+
+        if (newGoal) {
+          set((state) => ({
+            goals: [...state.goals, { ...newGoal, current_amount: 0 }],
+          }));
+        }
+      },
+
+      updateGoal: async (id, data) => {
+        const { data: updatedGoal } = await supabase
+          .from('goals')
+          .update(data)
+          .eq('id', id)
+          .select(
+            `
+            *,
+            income_amount: transactions(amount).eq(type, 'income'),
+            expense_amount: transactions(amount).eq(type, 'expense')
+          `
+          )
+          .single();
+
+        if (updatedGoal) {
+          const goalWithProgress = {
+            ...updatedGoal,
+            current_amount:
+              (updatedGoal.income_amount?.sum?.amount ?? 0) -
+              (updatedGoal.expense_amount?.sum?.amount ?? 0),
+          };
+
+          set((state) => ({
+            goals: state.goals.map((goal) => (goal.id === id ? goalWithProgress : goal)),
+          }));
+        }
+      },
+
+      deleteGoal: async (id) => {
+        await supabase.from('goals').delete().eq('id', id);
+
+        set((state) => ({
+          goals: state.goals.filter((goal) => goal.id !== id),
+        }));
+      },
+    }),
+    {
+      name: 'goals-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({ goals: state.goals }),
+    }
+  )
+);
