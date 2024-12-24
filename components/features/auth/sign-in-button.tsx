@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import { Button } from '~/components/ui/button';
@@ -13,36 +14,33 @@ interface SignInButtonProps {
 }
 
 export function SignInButton({ provider, isLoading = false, onPress }: SignInButtonProps) {
-  const getProviderLabel = () => {
+  const providerConfig = useMemo(() => {
     switch (provider) {
       case 'apple':
-        return 'Sign in with Apple';
+        return {
+          icon: <AppleIcon className="text-white" height={24} width={24} />,
+          label: 'Sign in with Apple',
+          variant: 'solid',
+        };
       case 'google':
-        return 'Sign in with Google';
+        return {
+          icon: <GoogleIcon className="text-white" height={24} width={24} />,
+          label: 'Sign in with Google',
+          variant: 'outline',
+        };
       case 'anonymous':
-        return 'Sign in Anonymously';
+        return {
+          icon: <UserIcon className="text-foreground" size={24} />,
+          label: 'Sign in Anonymously',
+          variant: 'ghost',
+        };
     }
-  };
-
-  const getProviderIcon = () => {
-    switch (provider) {
-      case 'apple':
-        return <AppleIcon className="text-white" size={24} />;
-      case 'google':
-        // Note: We might want to use a different icon or create a custom one for Google
-        return <GoogleIcon className="text-white" size={24} />;
-      case 'anonymous':
-        return <UserIcon className="text-foreground" size={24} />;
-    }
-  };
+  }, [provider]);
 
   return (
-    <Button
-      variant={provider === 'anonymous' ? 'outline' : 'solid'}
-      disabled={isLoading}
-      onPress={onPress}>
-      {getProviderIcon()}
-      <Text>{getProviderLabel()}</Text>
+    <Button variant={providerConfig.variant} disabled={isLoading} onPress={onPress}>
+      {providerConfig.icon}
+      <Text>{providerConfig.label}</Text>
       <ActivityIndicator animating={isLoading} />
     </Button>
   );
