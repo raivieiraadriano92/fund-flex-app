@@ -4,11 +4,11 @@ import {
   BarChart3Icon,
   TargetIcon,
   SettingsIcon,
-  AppleIcon,
   UserIcon,
-  MessagesSquareIcon,
 } from 'lucide-react-native';
 
+import { AppleIcon } from './AppleIcon';
+import { GoogleIcon } from './GoogleIcon';
 import { iconWithClassName } from './iconWithClassName';
 
 // Tab icons
@@ -20,8 +20,8 @@ iconWithClassName(SettingsIcon);
 
 // Auth icons
 iconWithClassName(AppleIcon);
+iconWithClassName(GoogleIcon);
 iconWithClassName(UserIcon);
-iconWithClassName(MessagesSquareIcon);
 
 export {
   HomeIcon,
@@ -31,5 +31,5 @@ export {
   SettingsIcon,
   AppleIcon,
   UserIcon,
-  MessagesSquareIcon,
+  GoogleIcon,
 };

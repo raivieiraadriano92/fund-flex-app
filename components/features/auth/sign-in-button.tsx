@@ -2,7 +2,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
-import { AppleIcon, MessagesSquareIcon, UserIcon } from '~/lib/icons';
+import { AppleIcon, GoogleIcon, UserIcon } from '~/lib/icons';
 
 export type Provider = 'apple' | 'google' | 'anonymous';
 
@@ -30,7 +30,7 @@ export function SignInButton({ provider, isLoading = false, onPress }: SignInBut
         return <AppleIcon className="text-white" size={24} />;
       case 'google':
         // Note: We might want to use a different icon or create a custom one for Google
-        return <MessagesSquareIcon className="text-white" size={24} />;
+        return <GoogleIcon className="text-white" size={24} />;
       case 'anonymous':
         return <UserIcon className="text-foreground" size={24} />;
     }
@@ -38,7 +38,7 @@ export function SignInButton({ provider, isLoading = false, onPress }: SignInBut
 
   return (
     <Button
-      variant={provider === 'anonymous' ? 'outline' : 'default'}
+      variant={provider === 'anonymous' ? 'outline' : 'solid'}
       disabled={isLoading}
       onPress={onPress}>
       <View className="flex-row items-center gap-2">
