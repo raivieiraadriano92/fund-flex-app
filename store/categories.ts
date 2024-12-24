@@ -28,7 +28,7 @@ export const useCategoriesStore = create<CategoriesStore>()(
       fetchCategories: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { data } = await supabase
           .from('categories')
@@ -42,7 +42,7 @@ export const useCategoriesStore = create<CategoriesStore>()(
       createCategory: async (data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { data: newCategory, error } = await supabase
           .from('categories')
@@ -54,7 +54,9 @@ export const useCategoriesStore = create<CategoriesStore>()(
 
         if (newCategory) {
           set((state) => ({
-            categories: [...state.categories, newCategory],
+            categories: [...state.categories, newCategory].sort((a, b) =>
+              a.title.localeCompare(b.title)
+            ),
           }));
         }
       },
@@ -62,7 +64,7 @@ export const useCategoriesStore = create<CategoriesStore>()(
       updateCategory: async (id, data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { data: updatedCategory, error } = await supabase
           .from('categories')
@@ -76,9 +78,9 @@ export const useCategoriesStore = create<CategoriesStore>()(
 
         if (updatedCategory) {
           set((state) => ({
-            categories: state.categories.map((category) =>
-              category.id === id ? updatedCategory : category
-            ),
+            categories: state.categories
+              .map((category) => (category.id === id ? updatedCategory : category))
+              .sort((a, b) => a.title.localeCompare(b.title)),
           }));
         }
       },
@@ -86,7 +88,7 @@ export const useCategoriesStore = create<CategoriesStore>()(
       deleteCategory: async (id) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { error } = await supabase
           .from('categories')

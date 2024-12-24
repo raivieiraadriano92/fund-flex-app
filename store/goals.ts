@@ -32,7 +32,7 @@ export const useGoalsStore = create<GoalsStore>()(
       fetchGoals: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { data } = await supabase
           .from('goals')
@@ -60,7 +60,7 @@ export const useGoalsStore = create<GoalsStore>()(
       createGoal: async (data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { data: newGoal, error } = await supabase
           .from('goals')
@@ -80,7 +80,7 @@ export const useGoalsStore = create<GoalsStore>()(
       updateGoal: async (id, data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { data: updatedGoal, error } = await supabase
           .from('goals')
@@ -115,7 +115,7 @@ export const useGoalsStore = create<GoalsStore>()(
       deleteGoal: async (id) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { error } = await supabase.from('goals').delete().eq('id', id).eq('user_id', userId);
 

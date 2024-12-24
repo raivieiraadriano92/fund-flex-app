@@ -5,7 +5,7 @@ import { View } from 'react-native';
 
 import { CategoryItem } from '~/components/features/categories/category-item';
 import { Button } from '~/components/ui/button';
-import SegmentedControl from '~/components/ui/segmented-control';
+import { SegmentedControl } from '~/components/ui/segmented-control';
 import { Separator } from '~/components/ui/separator';
 import type { Category, CategoryType } from '~/core/types/category';
 import { PlusIcon } from '~/lib/icons';
@@ -39,6 +39,10 @@ export default function CategoriesScreen() {
     );
   };
 
+  const handleCreateCategory = () => {
+    router.push('/(app)/categories/new');
+  };
+
   return (
     <>
       <FlashList
@@ -66,7 +70,7 @@ export default function CategoriesScreen() {
       />
       <Button
         className="native:w-14 absolute bottom-4 right-4 w-11 rounded-full p-0"
-        // onPress={handleCreateCategory}
+        onPress={handleCreateCategory}
         size="lg">
         <PlusIcon className="text-white" />
       </Button>

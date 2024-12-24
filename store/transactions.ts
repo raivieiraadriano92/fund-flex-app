@@ -36,7 +36,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
       fetchTransactions: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { data } = await supabase
           .from('transactions')
@@ -55,7 +55,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
       fetchMoreTransactions: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { hasMore, page, transactions } = get();
 
@@ -83,7 +83,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
       createTransaction: async (data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { data: newTransaction, error } = await supabase
           .from('transactions')
@@ -103,7 +103,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
       updateTransaction: async (id, data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { data: updatedTransaction, error } = await supabase
           .from('transactions')
@@ -127,7 +127,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
       deleteTransaction: async (id) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) return;
+        if (!userId) throw new Error('User not found');
 
         const { error } = await supabase
           .from('transactions')
