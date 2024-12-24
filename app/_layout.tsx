@@ -2,17 +2,19 @@ import '../global.css';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DarkTheme, DefaultTheme, Theme, ThemeProvider } from '@react-navigation/native';
-import { SplashScreen, Stack } from 'expo-router';
+import { Slot, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
+import { AuthProvider } from '~/components/providers/auth-provider';
+import { useProtectedRoute } from '~/core/hooks/use-protected-route';
 import { NAV_THEME } from '~/lib/constants';
 import { useColorScheme } from '~/lib/useColorScheme';
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  initialRouteName: 'index',
 };
 
 export {
@@ -31,8 +33,23 @@ const DARK_THEME: Theme = {
   colors: { ...DarkTheme, ...NAV_THEME.dark },
 };
 
-// Prevent the splash screen from auto-hiding before getting the color scheme.
+// Keep splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
+
+function AuthProtection() {
+  const { isInitialized } = useProtectedRoute();
+
+  useEffect(() => {
+    if (isInitialized) {
+      // Hide the splash screen after a short delay to prevent flickering
+      setTimeout(() => {
+        SplashScreen.hideAsync();
+      }, 500);
+    }
+  }, [isInitialized]);
+
+  return <Slot />;
+}
 
 export default function RootLayout() {
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
@@ -40,39 +57,40 @@ export default function RootLayout() {
 
   useEffect(() => {
     (async () => {
-      const theme = await AsyncStorage.getItem('theme');
-      if (Platform.OS === 'web') {
-        // Adds the background color to the html element to prevent white background on overscroll.
-        document.documentElement.classList.add('bg-background');
-      }
-      if (!theme) {
-        AsyncStorage.setItem('theme', colorScheme);
+      try {
+        const theme = await AsyncStorage.getItem('theme');
+        if (Platform.OS === 'web') {
+          document.documentElement.classList.add('bg-background');
+        }
+        if (!theme) {
+          await AsyncStorage.setItem('theme', colorScheme);
+          setIsColorSchemeLoaded(true);
+          return;
+        }
+        const colorTheme = theme === 'dark' ? 'dark' : 'light';
+        if (colorTheme !== colorScheme) {
+          setColorScheme(colorTheme);
+          setIsColorSchemeLoaded(true);
+          return;
+        }
         setIsColorSchemeLoaded(true);
-        return;
-      }
-      const colorTheme = theme === 'dark' ? 'dark' : 'light';
-      if (colorTheme !== colorScheme) {
-        setColorScheme(colorTheme);
-
+      } catch (e) {
+        console.error('Error loading theme:', e);
         setIsColorSchemeLoaded(true);
-        return;
       }
-      setIsColorSchemeLoaded(true);
-    })().finally(() => {
-      SplashScreen.hideAsync();
-    });
+    })();
   }, []);
 
   if (!isColorSchemeLoaded) {
     return null;
   }
+
   return (
     <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
       <StatusBar animated style={isDarkColorScheme ? 'light' : 'dark'} />
-      <Stack>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+      <AuthProvider>
+        <AuthProtection />
+      </AuthProvider>
     </ThemeProvider>
   );
 }

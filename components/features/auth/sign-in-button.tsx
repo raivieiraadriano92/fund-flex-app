@@ -1,5 +1,5 @@
 import { AntDesign } from '@expo/vector-icons';
-import { View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
@@ -40,9 +40,10 @@ export function SignInButton({ provider, isLoading = false, onPress }: SignInBut
       variant={provider === 'anonymous' ? 'outline' : 'default'}
       disabled={isLoading}
       onPress={onPress}>
-      <View className="flex-row items-center space-x-2">
+      <View className="flex-row items-center gap-x-2">
         {getProviderIcon()}
         <Text>{getProviderLabel()}</Text>
+        {isLoading && <ActivityIndicator />}
       </View>
     </Button>
   );

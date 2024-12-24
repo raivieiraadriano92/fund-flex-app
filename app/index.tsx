@@ -22,9 +22,9 @@ export default function SignInScreen() {
   };
 
   return (
-    <View className="flex-1 justify-center space-y-8 px-4 py-6">
+    <View className="flex-1 justify-center gap-y-8 px-4 py-6">
       {/* Logo and Title Section */}
-      <View className="items-center space-y-4">
+      <View className="items-center gap-y-4">
         <Logo />
         <H1>FundFlex</H1>
         <P>Take control of your finances</P>
@@ -38,7 +38,7 @@ export default function SignInScreen() {
       )}
 
       {/* Auth Buttons Section */}
-      <View className="space-y-4">
+      <View className="gap-y-4">
         <SignInButton
           provider="apple"
           onPress={() => handleSignIn('apple')}
