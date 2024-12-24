@@ -69,6 +69,7 @@ export type Database = {
           category_id: string;
           created_at: string | null;
           datetime: string;
+          goal_id: string | null;
           id: string;
           title: string;
           type: Database['public']['Enums']['transaction_type'];
@@ -80,6 +81,7 @@ export type Database = {
           category_id: string;
           created_at?: string | null;
           datetime?: string;
+          goal_id?: string | null;
           id?: string;
           title: string;
           type: Database['public']['Enums']['transaction_type'];
@@ -91,6 +93,7 @@ export type Database = {
           category_id?: string;
           created_at?: string | null;
           datetime?: string;
+          goal_id?: string | null;
           id?: string;
           title?: string;
           type?: Database['public']['Enums']['transaction_type'];
@@ -103,6 +106,13 @@ export type Database = {
             columns: ['category_id'];
             isOneToOne: false;
             referencedRelation: 'categories';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'transactions_goal_id_fkey';
+            columns: ['goal_id'];
+            isOneToOne: false;
+            referencedRelation: 'goals';
             referencedColumns: ['id'];
           },
         ];
