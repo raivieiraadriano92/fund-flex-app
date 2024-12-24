@@ -34,9 +34,14 @@ export const useTransactionsStore = create<TransactionsStore>()(
       page: 1,
 
       fetchTransactions: async () => {
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) return;
+
         const { data } = await supabase
           .from('transactions')
           .select('*')
+          .eq('user_id', userId)
           .order('datetime', { ascending: false })
           .range(0, LIMIT - 1);
 
@@ -48,6 +53,10 @@ export const useTransactionsStore = create<TransactionsStore>()(
       },
 
       fetchMoreTransactions: async () => {
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) return;
+
         const { hasMore, page, transactions } = get();
 
         if (!hasMore) return;
@@ -58,6 +67,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
         const { data } = await supabase
           .from('transactions')
           .select('*')
+          .eq('user_id', userId)
           .order('datetime', { ascending: false })
           .range(from, to);
 
@@ -72,11 +82,16 @@ export const useTransactionsStore = create<TransactionsStore>()(
 
       createTransaction: async (data) => {
         const userId = useAuthStore.getState().session?.user.id;
-        const { data: newTransaction } = await supabase
+
+        if (!userId) return;
+
+        const { data: newTransaction, error } = await supabase
           .from('transactions')
           .insert([{ ...data, user_id: userId }])
           .select()
           .single();
+
+        if (error) throw error;
 
         if (newTransaction) {
           set((state) => ({
@@ -86,12 +101,19 @@ export const useTransactionsStore = create<TransactionsStore>()(
       },
 
       updateTransaction: async (id, data) => {
-        const { data: updatedTransaction } = await supabase
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) return;
+
+        const { data: updatedTransaction, error } = await supabase
           .from('transactions')
           .update(data)
           .eq('id', id)
+          .eq('user_id', userId)
           .select()
           .single();
+
+        if (error) throw error;
 
         if (updatedTransaction) {
           set((state) => ({
@@ -103,7 +125,17 @@ export const useTransactionsStore = create<TransactionsStore>()(
       },
 
       deleteTransaction: async (id) => {
-        await supabase.from('transactions').delete().eq('id', id);
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) return;
+
+        const { error } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', userId);
+
+        if (error) throw error;
 
         set((state) => ({
           transactions: state.transactions.filter((transaction) => transaction.id !== id),

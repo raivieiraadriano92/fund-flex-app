@@ -30,6 +30,10 @@ export const useGoalsStore = create<GoalsStore>()(
       goals: [],
 
       fetchGoals: async () => {
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) return;
+
         const { data } = await supabase
           .from('goals')
           .select(
@@ -39,6 +43,7 @@ export const useGoalsStore = create<GoalsStore>()(
             expense_amount: transactions(amount).eq(type, 'expense')
           `
           )
+          .eq('user_id', userId)
           .order('title');
 
         // Transform the data to calculate net amount
@@ -54,11 +59,16 @@ export const useGoalsStore = create<GoalsStore>()(
 
       createGoal: async (data) => {
         const userId = useAuthStore.getState().session?.user.id;
-        const { data: newGoal } = await supabase
+
+        if (!userId) return;
+
+        const { data: newGoal, error } = await supabase
           .from('goals')
           .insert([{ ...data, user_id: userId }])
           .select()
           .single();
+
+        if (error) throw error;
 
         if (newGoal) {
           set((state) => ({
@@ -68,10 +78,15 @@ export const useGoalsStore = create<GoalsStore>()(
       },
 
       updateGoal: async (id, data) => {
-        const { data: updatedGoal } = await supabase
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) return;
+
+        const { data: updatedGoal, error } = await supabase
           .from('goals')
           .update(data)
           .eq('id', id)
+          .eq('user_id', userId)
           .select(
             `
             *,
@@ -80,6 +95,8 @@ export const useGoalsStore = create<GoalsStore>()(
           `
           )
           .single();
+
+        if (error) throw error;
 
         if (updatedGoal) {
           const goalWithProgress = {
@@ -96,7 +113,13 @@ export const useGoalsStore = create<GoalsStore>()(
       },
 
       deleteGoal: async (id) => {
-        await supabase.from('goals').delete().eq('id', id);
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) return;
+
+        const { error } = await supabase.from('goals').delete().eq('id', id).eq('user_id', userId);
+
+        if (error) throw error;
 
         set((state) => ({
           goals: state.goals.filter((goal) => goal.id !== id),

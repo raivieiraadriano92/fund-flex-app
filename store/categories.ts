@@ -26,18 +26,31 @@ export const useCategoriesStore = create<CategoriesStore>()(
       categories: [],
 
       fetchCategories: async () => {
-        const { data } = await supabase.from('categories').select('*').order('title');
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) return;
+
+        const { data } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('user_id', userId)
+          .order('title');
 
         set({ categories: data ?? [] });
       },
 
       createCategory: async (data) => {
         const userId = useAuthStore.getState().session?.user.id;
-        const { data: newCategory } = await supabase
+
+        if (!userId) return;
+
+        const { data: newCategory, error } = await supabase
           .from('categories')
           .insert([{ ...data, user_id: userId }])
           .select()
           .single();
+
+        if (error) throw error;
 
         if (newCategory) {
           set((state) => ({
@@ -47,12 +60,19 @@ export const useCategoriesStore = create<CategoriesStore>()(
       },
 
       updateCategory: async (id, data) => {
-        const { data: updatedCategory } = await supabase
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) return;
+
+        const { data: updatedCategory, error } = await supabase
           .from('categories')
           .update(data)
           .eq('id', id)
+          .eq('user_id', userId)
           .select()
           .single();
+
+        if (error) throw error;
 
         if (updatedCategory) {
           set((state) => ({
@@ -64,7 +84,17 @@ export const useCategoriesStore = create<CategoriesStore>()(
       },
 
       deleteCategory: async (id) => {
-        await supabase.from('categories').delete().eq('id', id);
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) return;
+
+        const { error } = await supabase
+          .from('categories')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', userId);
+
+        if (error) throw error;
 
         set((state) => ({
           categories: state.categories.filter((category) => category.id !== id),
