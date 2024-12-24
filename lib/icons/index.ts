@@ -5,11 +5,16 @@ import {
   TargetIcon,
   SettingsIcon,
   UserIcon,
+  ChevronRightIcon,
+  PlusIcon,
 } from 'lucide-react-native';
 
 import { AppleIcon } from './AppleIcon';
 import { GoogleIcon } from './GoogleIcon';
 import { iconWithClassName } from './iconWithClassName';
+
+iconWithClassName(PlusIcon);
+iconWithClassName(ChevronRightIcon);
 
 // Tab icons
 iconWithClassName(HomeIcon);
@@ -24,6 +29,8 @@ iconWithClassName(GoogleIcon);
 iconWithClassName(UserIcon);
 
 export {
+  PlusIcon,
+  ChevronRightIcon,
   HomeIcon,
   LayoutGridIcon,
   BarChart3Icon,
