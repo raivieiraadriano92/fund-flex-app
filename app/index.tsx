@@ -26,8 +26,11 @@ export default function SignInScreen() {
       {/* Logo and Title Section */}
       <View className="items-center gap-y-4">
         <Logo />
-        <H1>FundFlex</H1>
-        <P>Take control of your finances</P>
+        <H1 className="text-center">Manage & Track Your Money in One App</H1>
+        <P className="text-center">
+          Take control of your financial future with our all-in-one finance management app. Designed
+          to simplify and streamline your money matters
+        </P>
       </View>
 
       {/* Error Message */}

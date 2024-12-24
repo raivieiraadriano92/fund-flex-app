@@ -1,8 +1,8 @@
-import { AntDesign } from '@expo/vector-icons';
 import { ActivityIndicator, View } from 'react-native';
 
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
+import { AppleIcon, MessagesSquareIcon, UserIcon } from '~/lib/icons';
 
 export type Provider = 'apple' | 'google' | 'anonymous';
 
@@ -27,11 +27,12 @@ export function SignInButton({ provider, isLoading = false, onPress }: SignInBut
   const getProviderIcon = () => {
     switch (provider) {
       case 'apple':
-        return <AntDesign name="apple1" size={24} color="#fff" />;
+        return <AppleIcon className="text-white" size={24} />;
       case 'google':
-        return <AntDesign name="google" size={24} color="#fff" />;
+        // Note: We might want to use a different icon or create a custom one for Google
+        return <MessagesSquareIcon className="text-white" size={24} />;
       case 'anonymous':
-        return <AntDesign name="user" size={24} color="#000" />;
+        return <UserIcon className="text-foreground" size={24} />;
     }
   };
 
@@ -40,10 +41,10 @@ export function SignInButton({ provider, isLoading = false, onPress }: SignInBut
       variant={provider === 'anonymous' ? 'outline' : 'default'}
       disabled={isLoading}
       onPress={onPress}>
-      <View className="flex-row items-center gap-x-2">
+      <View className="flex-row items-center gap-2">
         {getProviderIcon()}
         <Text>{getProviderLabel()}</Text>
-        {isLoading && <ActivityIndicator />}
+        <ActivityIndicator animating={isLoading} />
       </View>
     </Button>
   );
