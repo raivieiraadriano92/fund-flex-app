@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { AuthProvider } from '~/components/providers/auth-provider';
+import { DataProvider } from '~/components/providers/data-provider';
 import { useProtectedRoute } from '~/core/hooks/use-protected-route';
 import { NAV_THEME } from '~/lib/constants';
 import { useColorScheme } from '~/lib/useColorScheme';
@@ -39,14 +40,9 @@ SplashScreen.preventAutoHideAsync();
 function AuthProtection() {
   const { isInitialized } = useProtectedRoute();
 
-  useEffect(() => {
-    if (isInitialized) {
-      // Hide the splash screen after a short delay to prevent flickering
-      setTimeout(() => {
-        SplashScreen.hideAsync();
-      }, 500);
-    }
-  }, [isInitialized]);
+  if (!isInitialized) {
+    return null;
+  }
 
   return <Slot />;
 }
@@ -89,7 +85,9 @@ export default function RootLayout() {
     <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
       <StatusBar animated style={isDarkColorScheme ? 'light' : 'dark'} />
       <AuthProvider>
-        <AuthProtection />
+        <DataProvider>
+          <AuthProtection />
+        </DataProvider>
       </AuthProvider>
     </ThemeProvider>
   );
