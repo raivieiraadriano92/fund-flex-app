@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { PortalHost } from '@rn-primitives/portal';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -12,6 +13,7 @@ import { Text } from '~/components/ui/text';
 import { P } from '~/components/ui/typography';
 import type { CategoryFormData } from '~/core/types/category';
 import { categoryFormSchema } from '~/core/validations/category';
+import { TrashIcon } from '~/lib/icons';
 import { useCategoriesStore } from '~/store/categories';
 
 export default function CategoryFormScreen() {
@@ -19,12 +21,14 @@ export default function CategoryFormScreen() {
   const router = useRouter();
   const isEditing = id !== 'new';
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
   const category = useCategoriesStore((state) =>
     isEditing ? state.categories.find((c) => c.id === id) : null
   );
-  const { createCategory, updateCategory } = useCategoriesStore();
+  const { createCategory, deleteCategory, updateCategory } = useCategoriesStore();
 
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categoryFormSchema),
@@ -50,6 +54,29 @@ export default function CategoryFormScreen() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDelete = async () => {
+    Alert.alert('Delete category', 'Are you sure?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setIsDeleting(true);
+            await deleteCategory(id);
+            router.back();
+          } catch (error) {
+          } finally {
+            setIsDeleting(false);
+          }
+        },
+      },
+    ]);
   };
 
   return (
@@ -102,10 +129,23 @@ export default function CategoryFormScreen() {
 
           <Button onPress={form.handleSubmit(onSubmit)} disabled={isLoading}>
             <Text>{isEditing ? 'Update' : 'Create'} Category</Text>
-            <ActivityIndicator animating={isLoading} />
+            {isLoading && <ActivityIndicator color="white" />}
           </Button>
+
+          {isEditing && (
+            <Button
+              className="mt-4"
+              disabled={isDeleting}
+              onPress={handleDelete}
+              variant="destructive">
+              <TrashIcon className="text-destructive-foreground" />
+              <Text className="text-destructive-foreground">Delete Category</Text>
+              {isDeleting && <ActivityIndicator color="white" />}
+            </Button>
+          )}
         </View>
       </ScrollView>
+      <PortalHost name="category-form-screen-portal" />
     </>
   );
 }
