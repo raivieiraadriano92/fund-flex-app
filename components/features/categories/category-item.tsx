@@ -22,7 +22,7 @@ export function CategoryItem({
 }: CategoryItemProps) {
   return (
     <TouchableOpacity
-      className={`h-16 flex-row items-center gap-x-3 bg-primary-foreground px-3 ${isFirst ? "rounded-t-xl" : ""} ${isLast ? "rounded-b-xl" : ""}`}
+      className={`h-16 flex-row items-center gap-3 bg-primary-foreground px-3 ${isFirst ? "rounded-t-xl" : ""} ${isLast ? "rounded-b-xl" : ""}`}
       onPress={() => onPress(category)}
     >
       <Avatar alt={category.title}>

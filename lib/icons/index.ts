@@ -7,12 +7,15 @@ import {
   UserIcon,
   ChevronRightIcon,
   PlusIcon,
-  TrashIcon
+  TrashIcon,
+  CirclePlusIcon
 } from "lucide-react-native";
 
 import { AppleIcon } from "./AppleIcon";
 import { GoogleIcon } from "./GoogleIcon";
 import { iconWithClassName } from "./iconWithClassName";
+
+iconWithClassName(CirclePlusIcon);
 
 iconWithClassName(TrashIcon);
 
@@ -39,6 +42,7 @@ iconWithClassName(GoogleIcon);
 iconWithClassName(UserIcon);
 
 export {
+  CirclePlusIcon,
   TrashIcon,
   PlusIcon,
   ChevronRightIcon,
