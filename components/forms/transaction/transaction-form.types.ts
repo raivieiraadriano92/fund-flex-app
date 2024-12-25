@@ -5,7 +5,7 @@ export interface TransactionFormProps {
 }
 
 export interface TransactionFormData {
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   amount: number;
   title: string;
   date: Date;

@@ -7,27 +7,35 @@ import {
   UserIcon,
   ChevronRightIcon,
   PlusIcon,
-  TrashIcon,
-} from 'lucide-react-native';
+  TrashIcon
+} from "lucide-react-native";
 
-import { AppleIcon } from './AppleIcon';
-import { GoogleIcon } from './GoogleIcon';
-import { iconWithClassName } from './iconWithClassName';
+import { AppleIcon } from "./AppleIcon";
+import { GoogleIcon } from "./GoogleIcon";
+import { iconWithClassName } from "./iconWithClassName";
 
 iconWithClassName(TrashIcon);
+
 iconWithClassName(PlusIcon);
+
 iconWithClassName(ChevronRightIcon);
 
 // Tab icons
 iconWithClassName(HomeIcon);
+
 iconWithClassName(LayoutGridIcon);
+
 iconWithClassName(BarChart3Icon);
+
 iconWithClassName(TargetIcon);
+
 iconWithClassName(SettingsIcon);
 
 // Auth icons
 iconWithClassName(AppleIcon);
+
 iconWithClassName(GoogleIcon);
+
 iconWithClassName(UserIcon);
 
 export {
@@ -41,5 +49,5 @@ export {
   SettingsIcon,
   AppleIcon,
   UserIcon,
-  GoogleIcon,
+  GoogleIcon
 };

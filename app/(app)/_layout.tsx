@@ -1,5 +1,5 @@
 // app/(app)/_layout.tsx
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
 
 export default function AppLayout() {
   return (
@@ -8,7 +8,7 @@ export default function AppLayout() {
       <Stack.Screen
         name="categories/[id]"
         options={{
-          presentation: 'modal',
+          presentation: "modal"
         }}
       />
     </Stack>

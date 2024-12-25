@@ -1,33 +1,38 @@
-import { useRouter, useSegments } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-import { useAuthStore } from '~/store/auth';
+import { useRouter, useSegments } from "expo-router";
+
+import { useAuthStore } from "~/store/auth";
 
 export function useProtectedRoute() {
   const router = useRouter();
+
   const segments = useSegments();
-  const session = useAuthStore((state) => state.session);
+
+  const userId = useAuthStore((state) => state.session?.user.id);
+
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const inAppGroup = segments[0] === '(app)';
+    const inAppGroup = segments[0] === "(app)";
 
     if (!isInitialized) {
       setIsInitialized(true);
+
       return;
     }
 
-    if (session && !inAppGroup) {
+    if (userId && !inAppGroup) {
       // User is authenticated and trying to access public routes
-      router.replace('/(app)/(tabs)/home');
-    } else if (!session && inAppGroup) {
+      router.replace("/(app)/(tabs)/home");
+    } else if (!userId && inAppGroup) {
       // User is not authenticated and trying to access protected routes
-      router.replace('/');
+      router.replace("/");
     }
-  }, [session, segments, isInitialized]);
+  }, [isInitialized, router, segments, userId]);
 
   return {
     isInitialized,
-    isAuthenticated: !!session,
+    isAuthenticated: !!userId
   };
 }

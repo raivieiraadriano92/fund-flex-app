@@ -1,11 +1,12 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-import { useAuthStore } from './auth';
+import { useAuthStore } from "./auth";
 
-import { supabase } from '~/core/api/supabase';
-import type { Goal, GoalFormData } from '~/core/types/goal';
+import type { Goal, GoalFormData } from "~/core/types/goal";
+
+import { supabase } from "~/core/api/supabase";
 
 interface GoalWithProgress extends Goal {
   current_amount: number;
@@ -32,10 +33,10 @@ export const useGoalsStore = create<GoalsStore>()(
       fetchGoals: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { data } = await supabase
-          .from('goals')
+          .from("goals")
           .select(
             `
             *,
@@ -43,15 +44,22 @@ export const useGoalsStore = create<GoalsStore>()(
             expense_amount: transactions(amount).eq(type, 'expense')
           `
           )
-          .eq('user_id', userId)
-          .order('title');
+          .eq("user_id", userId)
+          .order("title");
 
         // Transform the data to calculate net amount
         const goalsWithProgress =
           data?.map((goal) => ({
+            // @todo Fix this typing issue -> ParserError<"Unexpected input ...
+            // @ts-ignore
             ...goal,
             current_amount:
-              (goal.income_amount?.sum?.amount ?? 0) - (goal.expense_amount?.sum?.amount ?? 0),
+              // @todo Fix this typing issue -> ParserError<"Unexpected input ...
+              // @ts-ignore
+              (goal.income_amount?.sum?.amount ?? 0) -
+              // @todo Fix this typing issue -> ParserError<"Unexpected input ...
+              // @ts-ignore
+              (goal.expense_amount?.sum?.amount ?? 0)
           })) ?? [];
 
         set({ goals: goalsWithProgress });
@@ -60,10 +68,10 @@ export const useGoalsStore = create<GoalsStore>()(
       createGoal: async (data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { data: newGoal, error } = await supabase
-          .from('goals')
+          .from("goals")
           .insert([{ ...data, user_id: userId }])
           .select()
           .single();
@@ -72,7 +80,7 @@ export const useGoalsStore = create<GoalsStore>()(
 
         if (newGoal) {
           set((state) => ({
-            goals: [...state.goals, { ...newGoal, current_amount: 0 }],
+            goals: [...state.goals, { ...newGoal, current_amount: 0 }]
           }));
         }
       },
@@ -80,13 +88,13 @@ export const useGoalsStore = create<GoalsStore>()(
       updateGoal: async (id, data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { data: updatedGoal, error } = await supabase
-          .from('goals')
+          .from("goals")
           .update(data)
-          .eq('id', id)
-          .eq('user_id', userId)
+          .eq("id", id)
+          .eq("user_id", userId)
           .select(
             `
             *,
@@ -100,14 +108,22 @@ export const useGoalsStore = create<GoalsStore>()(
 
         if (updatedGoal) {
           const goalWithProgress = {
+            // @todo Fix this typing issue -> ParserError<"Unexpected input ...
+            // @ts-ignore
             ...updatedGoal,
             current_amount:
+              // @todo Fix this typing issue -> ParserError<"Unexpected input ...
+              // @ts-ignore
               (updatedGoal.income_amount?.sum?.amount ?? 0) -
-              (updatedGoal.expense_amount?.sum?.amount ?? 0),
+              // @todo Fix this typing issue -> ParserError<"Unexpected input ...
+              // @ts-ignore
+              (updatedGoal.expense_amount?.sum?.amount ?? 0)
           };
 
           set((state) => ({
-            goals: state.goals.map((goal) => (goal.id === id ? goalWithProgress : goal)),
+            goals: state.goals.map((goal) =>
+              goal.id === id ? goalWithProgress : goal
+            )
           }));
         }
       },
@@ -115,21 +131,25 @@ export const useGoalsStore = create<GoalsStore>()(
       deleteGoal: async (id) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
-        const { error } = await supabase.from('goals').delete().eq('id', id).eq('user_id', userId);
+        const { error } = await supabase
+          .from("goals")
+          .delete()
+          .eq("id", id)
+          .eq("user_id", userId);
 
         if (error) throw error;
 
         set((state) => ({
-          goals: state.goals.filter((goal) => goal.id !== id),
+          goals: state.goals.filter((goal) => goal.id !== id)
         }));
-      },
+      }
     }),
     {
-      name: 'goals-storage',
+      name: "goals-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ goals: state.goals }),
+      partialize: (state) => ({ goals: state.goals })
     }
   )
 );

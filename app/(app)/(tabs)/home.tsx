@@ -1,7 +1,7 @@
-import { View } from 'react-native';
+import { View } from "react-native";
 
-import { H2 } from '~/components/ui/typography';
-import { supabase } from '~/core/api/supabase';
+import { H2 } from "~/components/ui/typography";
+// import { supabase } from "~/core/api/supabase";
 
 export default function HomeScreen() {
   // supabase.auth.signOut();

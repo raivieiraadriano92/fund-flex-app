@@ -1,8 +1,8 @@
 // components/providers/auth-provider.tsx
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
-import { supabase } from '~/core/api/supabase';
-import { useAuthStore } from '~/store/auth';
+import { supabase } from "~/core/api/supabase";
+import { useAuthStore } from "~/store/auth";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setSession = useAuthStore((state) => state.setSession);
@@ -15,7 +15,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const {
-      data: { subscription },
+      data: { subscription }
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });

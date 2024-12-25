@@ -1,11 +1,15 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-import { useAuthStore } from './auth';
+import { useAuthStore } from "./auth";
 
-import { supabase } from '~/core/api/supabase';
-import type { Transaction, TransactionFormData } from '~/core/types/transaction';
+import type {
+  Transaction,
+  TransactionFormData
+} from "~/core/types/transaction";
+
+import { supabase } from "~/core/api/supabase";
 
 interface TransactionsState {
   transactions: Transaction[];
@@ -36,46 +40,47 @@ export const useTransactionsStore = create<TransactionsStore>()(
       fetchTransactions: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { data } = await supabase
-          .from('transactions')
-          .select('*')
-          .eq('user_id', userId)
-          .order('datetime', { ascending: false })
+          .from("transactions")
+          .select("*")
+          .eq("user_id", userId)
+          .order("datetime", { ascending: false })
           .range(0, LIMIT - 1);
 
         set({
           transactions: data ?? [],
           page: 1,
-          hasMore: (data?.length ?? 0) === LIMIT,
+          hasMore: (data?.length ?? 0) === LIMIT
         });
       },
 
       fetchMoreTransactions: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { hasMore, page, transactions } = get();
 
         if (!hasMore) return;
 
         const from = page * LIMIT;
+
         const to = from + LIMIT - 1;
 
         const { data } = await supabase
-          .from('transactions')
-          .select('*')
-          .eq('user_id', userId)
-          .order('datetime', { ascending: false })
+          .from("transactions")
+          .select("*")
+          .eq("user_id", userId)
+          .order("datetime", { ascending: false })
           .range(from, to);
 
         if (data) {
           set({
             transactions: [...transactions, ...data],
             page: page + 1,
-            hasMore: data.length === LIMIT,
+            hasMore: data.length === LIMIT
           });
         }
       },
@@ -83,10 +88,10 @@ export const useTransactionsStore = create<TransactionsStore>()(
       createTransaction: async (data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { data: newTransaction, error } = await supabase
-          .from('transactions')
+          .from("transactions")
           .insert([{ ...data, user_id: userId }])
           .select()
           .single();
@@ -95,7 +100,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
 
         if (newTransaction) {
           set((state) => ({
-            transactions: [newTransaction, ...state.transactions],
+            transactions: [newTransaction, ...state.transactions]
           }));
         }
       },
@@ -103,13 +108,13 @@ export const useTransactionsStore = create<TransactionsStore>()(
       updateTransaction: async (id, data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { data: updatedTransaction, error } = await supabase
-          .from('transactions')
+          .from("transactions")
           .update(data)
-          .eq('id', id)
-          .eq('user_id', userId)
+          .eq("id", id)
+          .eq("user_id", userId)
           .select()
           .single();
 
@@ -119,7 +124,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
           set((state) => ({
             transactions: state.transactions.map((transaction) =>
               transaction.id === id ? updatedTransaction : transaction
-            ),
+            )
           }));
         }
       },
@@ -127,18 +132,20 @@ export const useTransactionsStore = create<TransactionsStore>()(
       deleteTransaction: async (id) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { error } = await supabase
-          .from('transactions')
+          .from("transactions")
           .delete()
-          .eq('id', id)
-          .eq('user_id', userId);
+          .eq("id", id)
+          .eq("user_id", userId);
 
         if (error) throw error;
 
         set((state) => ({
-          transactions: state.transactions.filter((transaction) => transaction.id !== id),
+          transactions: state.transactions.filter(
+            (transaction) => transaction.id !== id
+          )
         }));
       },
 
@@ -146,14 +153,14 @@ export const useTransactionsStore = create<TransactionsStore>()(
         set({
           transactions: [],
           hasMore: true,
-          page: 1,
+          page: 1
         });
-      },
+      }
     }),
     {
-      name: 'transactions-storage',
+      name: "transactions-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ transactions: state.transactions }),
+      partialize: (state) => ({ transactions: state.transactions })
     }
   )
 );

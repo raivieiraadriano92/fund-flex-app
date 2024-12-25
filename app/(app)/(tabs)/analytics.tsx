@@ -1,6 +1,6 @@
-import { View } from 'react-native';
+import { View } from "react-native";
 
-import { H2 } from '~/components/ui/typography';
+import { H2 } from "~/components/ui/typography";
 
 export default function AnalyticsScreen() {
   return (

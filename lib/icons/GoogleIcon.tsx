@@ -1,7 +1,7 @@
-import { Path } from 'react-native-svg';
+import { Path } from "react-native-svg";
 
-import { createIcon } from './createIcon';
-import { iconWithClassName } from './iconWithClassName';
+import { createIcon } from "./createIcon";
+import { iconWithClassName } from "./iconWithClassName";
 
 const GoogleIcon = createIcon({
   path: {
@@ -24,8 +24,8 @@ const GoogleIcon = createIcon({
           d="M21.805 10.041H21V10h-9v4h5.651a6.02 6.02 0 0 1-2.043 2.785h.002l3.095 2.619C18.485 19.602 22 17 22 12c0-.67-.069-1.325-.195-1.959Z"
         />
       </>
-    ),
-  },
+    )
+  }
 });
 
 iconWithClassName(GoogleIcon);

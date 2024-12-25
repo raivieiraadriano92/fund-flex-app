@@ -1,11 +1,12 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-import { useAuthStore } from './auth';
+import { useAuthStore } from "./auth";
 
-import { supabase } from '~/core/api/supabase';
-import type { Category, CategoryFormData } from '~/core/types/category';
+import type { Category, CategoryFormData } from "~/core/types/category";
+
+import { supabase } from "~/core/api/supabase";
 
 interface CategoriesState {
   categories: Category[];
@@ -28,13 +29,13 @@ export const useCategoriesStore = create<CategoriesStore>()(
       fetchCategories: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { data } = await supabase
-          .from('categories')
-          .select('*')
-          .eq('user_id', userId)
-          .order('title');
+          .from("categories")
+          .select("*")
+          .eq("user_id", userId)
+          .order("title");
 
         set({ categories: data ?? [] });
       },
@@ -42,10 +43,10 @@ export const useCategoriesStore = create<CategoriesStore>()(
       createCategory: async (data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { data: newCategory, error } = await supabase
-          .from('categories')
+          .from("categories")
           .insert([{ ...data, user_id: userId }])
           .select()
           .single();
@@ -56,7 +57,7 @@ export const useCategoriesStore = create<CategoriesStore>()(
           set((state) => ({
             categories: [...state.categories, newCategory].sort((a, b) =>
               a.title.localeCompare(b.title)
-            ),
+            )
           }));
         }
       },
@@ -64,13 +65,13 @@ export const useCategoriesStore = create<CategoriesStore>()(
       updateCategory: async (id, data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { data: updatedCategory, error } = await supabase
-          .from('categories')
+          .from("categories")
           .update(data)
-          .eq('id', id)
-          .eq('user_id', userId)
+          .eq("id", id)
+          .eq("user_id", userId)
           .select()
           .single();
 
@@ -79,8 +80,10 @@ export const useCategoriesStore = create<CategoriesStore>()(
         if (updatedCategory) {
           set((state) => ({
             categories: state.categories
-              .map((category) => (category.id === id ? updatedCategory : category))
-              .sort((a, b) => a.title.localeCompare(b.title)),
+              .map((category) =>
+                category.id === id ? updatedCategory : category
+              )
+              .sort((a, b) => a.title.localeCompare(b.title))
           }));
         }
       },
@@ -88,25 +91,25 @@ export const useCategoriesStore = create<CategoriesStore>()(
       deleteCategory: async (id) => {
         const userId = useAuthStore.getState().session?.user.id;
 
-        if (!userId) throw new Error('User not found');
+        if (!userId) throw new Error("User not found");
 
         const { error } = await supabase
-          .from('categories')
+          .from("categories")
           .delete()
-          .eq('id', id)
-          .eq('user_id', userId);
+          .eq("id", id)
+          .eq("user_id", userId);
 
         if (error) throw error;
 
         set((state) => ({
-          categories: state.categories.filter((category) => category.id !== id),
+          categories: state.categories.filter((category) => category.id !== id)
         }));
-      },
+      }
     }),
     {
-      name: 'categories-storage',
+      name: "categories-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ categories: state.categories }),
+      partialize: (state) => ({ categories: state.categories })
     }
   )
 );

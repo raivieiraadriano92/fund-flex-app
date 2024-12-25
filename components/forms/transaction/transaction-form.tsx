@@ -1,7 +1,5 @@
-import { View } from 'react-native';
+import { View } from "react-native";
 
-import type { TransactionFormProps } from './transaction-form.types';
-
-export function TransactionForm({ onSubmit, defaultValues, isEditing }: TransactionFormProps) {
+export function TransactionForm() {
   return <View />;
 }

@@ -1,20 +1,23 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-import { supabase } from '~/core/api/supabase';
+import { supabase } from "~/core/api/supabase";
 
 export function useAuth() {
   const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>({
     apple: false,
     google: false,
-    anonymous: false,
+    anonymous: false
   });
+
   const [error, setError] = useState<string | null>(null);
 
   const signInWithApple = async () => {
     try {
       setIsLoading((prev) => ({ ...prev, apple: true }));
+
       // @todo implement Apple sign-in
       const { error } = await supabase.auth.signInAnonymously();
+
       if (error) throw error;
     } catch (err) {
       setError(err.message);
@@ -26,8 +29,10 @@ export function useAuth() {
   const signInWithGoogle = async () => {
     try {
       setIsLoading((prev) => ({ ...prev, google: true }));
+
       // @todo implement Google sign-in
       const { error } = await supabase.auth.signInAnonymously();
+
       if (error) throw error;
     } catch (err) {
       setError(err.message);
@@ -39,7 +44,9 @@ export function useAuth() {
   const signInAnonymously = async () => {
     try {
       setIsLoading((prev) => ({ ...prev, anonymous: true }));
+
       const { error } = await supabase.auth.signInAnonymously();
+
       if (error) throw error;
     } catch (err) {
       setError(err.message);
@@ -53,6 +60,6 @@ export function useAuth() {
     error,
     signInWithApple,
     signInWithGoogle,
-    signInAnonymously,
+    signInAnonymously
   };
 }

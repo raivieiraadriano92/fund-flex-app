@@ -1,12 +1,15 @@
-import RNSegmentedControl from '@react-native-segmented-control/segmented-control';
-import { ComponentProps } from 'react';
+import { ComponentProps } from "react";
 
-export function SegmentedControl(props: ComponentProps<typeof RNSegmentedControl>) {
+import RNSegmentedControl from "@react-native-segmented-control/segmented-control";
+
+export function SegmentedControl(
+  props: ComponentProps<typeof RNSegmentedControl>
+) {
   return (
     <RNSegmentedControl
       activeFontStyle={{
         fontSize: 14,
-        fontWeight: '600',
+        fontWeight: "600"
       }}
       fontStyle={{ fontSize: 14 }}
       style={{ height: 44 }}
