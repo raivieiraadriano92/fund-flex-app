@@ -6,6 +6,8 @@ import { Slot, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Toaster } from 'sonner-native';
 
 import { AuthProvider } from '~/components/providers/auth-provider';
 import { DataProvider } from '~/components/providers/data-provider';
@@ -82,13 +84,16 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-      <StatusBar animated style={isDarkColorScheme ? 'light' : 'dark'} />
-      <AuthProvider>
-        <DataProvider>
-          <AuthProtection />
-        </DataProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView className="flex-1">
+      <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+        <StatusBar animated style={isDarkColorScheme ? 'light' : 'dark'} />
+        <AuthProvider>
+          <DataProvider>
+            <AuthProtection />
+            <Toaster closeButton richColors />
+          </DataProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

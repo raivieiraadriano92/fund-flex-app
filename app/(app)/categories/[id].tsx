@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
 import EmojiPicker from 'rn-emoji-keyboard';
+import { toast } from 'sonner-native';
 
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
@@ -48,9 +49,9 @@ export default function CategoryFormScreen() {
         await createCategory(data);
       }
       router.back();
+      toast.success('Category saved successfully.');
     } catch (error) {
-      console.error(error);
-      Alert.alert('Ops', 'An error occurred while saving the category. Please try again.');
+      toast.error('An error occurred while saving the category. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +71,9 @@ export default function CategoryFormScreen() {
             setIsDeleting(true);
             await deleteCategory(id);
             router.back();
+            toast.success('Category deleted successfully.');
           } catch (error) {
+            toast.error('An error occurred while deleting the category. Please try again.');
           } finally {
             setIsDeleting(false);
           }
