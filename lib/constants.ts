@@ -1,10 +1,13 @@
-export const NAV_THEME = {
+import { Theme } from "@react-navigation/native";
+
+export const NAV_THEME: Record<"light" | "dark", Theme["colors"]> = {
   light: {
     background: "hsl(0 0% 100%)", // background
     border: "hsl(214.3 31.8% 91.4%)", // border
     card: "hsl(0 0% 100%)", // card
     notification: "hsl(0 84.2% 60.2%)", // destructive
     primary: "hsl(221.2 83.2% 53.3%)", // primary
+    primaryForeground: "hsl(210 40% 98%)", // primary-foreground
     text: "hsl(222.2 84% 4.9%)" // foreground
   },
   dark: {
@@ -13,6 +16,7 @@ export const NAV_THEME = {
     card: "hsl(222.2 84% 4.9%)", // card
     notification: "hsl(0 62.8% 30.6%)", // destructive
     primary: "hsl(217.2 91.2% 59.8%)", // primary
+    primaryForeground: "hsl(222.2 47.4% 11.2%)", // primary-foreground
     text: "hsl(210 40% 98%)" // foreground
   }
 };

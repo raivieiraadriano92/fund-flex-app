@@ -9,7 +9,7 @@ import { Text } from "~/components/ui/text";
 
 interface AmountProps extends TextProps {
   as?: ComponentType<TextProps>;
-  type: TransactionType;
+  type?: TransactionType;
   amount: number;
 }
 
@@ -19,7 +19,7 @@ export function Amount({ as, type, amount, className, ...props }: AmountProps) {
   return (
     <Component
       className={`
-        ${type === "expense" ? "text-destructive" : "text-green-500"}
+        ${type === "expense" ? "text-destructive" : type === "income" ? "text-green-500" : ""}
         ${className}
       `}
       {...props}

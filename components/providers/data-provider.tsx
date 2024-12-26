@@ -4,12 +4,15 @@ import { SplashScreen } from "expo-router";
 
 import { useAuthStore } from "~/store/auth";
 import { useCategoriesStore } from "~/store/categories";
+import { useGoalsStore } from "~/store/goals";
 import { useTransactionsStore } from "~/store/transactions";
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const session = useAuthStore((state) => state.session);
 
   const fetchCategories = useCategoriesStore((state) => state.fetchCategories);
+
+  const fetchGoals = useGoalsStore((state) => state.fetchGoals);
 
   const fetchTransactions = useTransactionsStore(
     (state) => state.fetchTransactions
@@ -21,7 +24,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     async function loadData() {
       try {
         if (session?.user.id) {
-          await Promise.all([fetchCategories(), fetchTransactions()]);
+          await Promise.all([
+            fetchCategories(),
+            fetchGoals(),
+            fetchTransactions()
+          ]);
         }
       } catch (error) {
         console.error("Error loading initial data:", error);

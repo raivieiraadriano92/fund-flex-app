@@ -80,7 +80,9 @@ export const useGoalsStore = create<GoalsStore>()(
 
         if (newGoal) {
           set((state) => ({
-            goals: [...state.goals, { ...newGoal, current_amount: 0 }]
+            goals: [...state.goals, { ...newGoal, current_amount: 0 }].sort(
+              (a, b) => a.title.localeCompare(b.title)
+            )
           }));
         }
       },
@@ -121,9 +123,9 @@ export const useGoalsStore = create<GoalsStore>()(
           };
 
           set((state) => ({
-            goals: state.goals.map((goal) =>
-              goal.id === id ? goalWithProgress : goal
-            )
+            goals: state.goals
+              .map((goal) => (goal.id === id ? goalWithProgress : goal))
+              .sort((a, b) => a.title.localeCompare(b.title))
           }));
         }
       },
