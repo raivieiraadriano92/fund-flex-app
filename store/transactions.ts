@@ -13,6 +13,7 @@ import { supabase } from "~/core/api/supabase";
 
 interface TransactionsState {
   transactions: Transaction[];
+  totalBalance: number;
   hasMore: boolean;
   page: number;
 }
@@ -20,6 +21,7 @@ interface TransactionsState {
 interface TransactionsActions {
   fetchTransactions: () => Promise<void>;
   fetchMoreTransactions: () => Promise<void>;
+  fetchTotalBalance: () => Promise<void>;
   createTransaction: (data: TransactionFormData) => Promise<void>;
   updateTransaction: (id: string, data: TransactionFormData) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
@@ -34,6 +36,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
   persist(
     (set, get) => ({
       transactions: [],
+      totalBalance: 0,
       hasMore: true,
       page: 1,
 
@@ -54,6 +57,9 @@ export const useTransactionsStore = create<TransactionsStore>()(
           page: 1,
           hasMore: (data?.length ?? 0) === LIMIT
         });
+
+        // Fetch updated balance
+        get().fetchTotalBalance();
       },
 
       fetchMoreTransactions: async () => {
@@ -85,6 +91,22 @@ export const useTransactionsStore = create<TransactionsStore>()(
         }
       },
 
+      fetchTotalBalance: async () => {
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) throw new Error("User not found");
+
+        const { data } = await supabase.rpc("calculate_balance", {
+          user_id_param: userId
+        });
+
+        console.log(data);
+
+        if (data) {
+          set({ totalBalance: data });
+        }
+      },
+
       createTransaction: async (data) => {
         const userId = useAuthStore.getState().session?.user.id;
 
@@ -102,6 +124,9 @@ export const useTransactionsStore = create<TransactionsStore>()(
           set((state) => ({
             transactions: [newTransaction, ...state.transactions]
           }));
+
+          // Fetch updated balance
+          get().fetchTotalBalance();
         }
       },
 
@@ -126,6 +151,9 @@ export const useTransactionsStore = create<TransactionsStore>()(
               transaction.id === id ? updatedTransaction : transaction
             )
           }));
+
+          // Fetch updated balance
+          get().fetchTotalBalance();
         }
       },
 
@@ -147,6 +175,9 @@ export const useTransactionsStore = create<TransactionsStore>()(
             (transaction) => transaction.id !== id
           )
         }));
+
+        // Fetch updated balance
+        get().fetchTotalBalance();
       },
 
       reset: () => {

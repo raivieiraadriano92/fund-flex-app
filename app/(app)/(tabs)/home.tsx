@@ -21,20 +21,7 @@ import { LIMIT, useTransactionsStore } from "~/store/transactions";
 export default function HomeScreen() {
   const router = useRouter();
 
-  const transactions = useTransactionsStore((state) => state.transactions);
-
-  const totalBalance = useMemo(
-    () =>
-      transactions.reduce(
-        (total, transaction) =>
-          total +
-          (transaction.type === "income"
-            ? transaction.amount
-            : -transaction.amount),
-        0
-      ),
-    [transactions]
-  );
+  const { transactions, totalBalance } = useTransactionsStore();
 
   const recentTransactions = transactions.slice(0, LIMIT);
 

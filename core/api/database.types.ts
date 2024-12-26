@@ -128,7 +128,12 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      calculate_balance: {
+        Args: {
+          user_id_param: string;
+        };
+        Returns: number;
+      };
     };
     Enums: {
       transaction_type: "expense" | "income";
