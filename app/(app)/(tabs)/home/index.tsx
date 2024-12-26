@@ -26,6 +26,10 @@ export default function HomeScreen() {
 
   const recentTransactions = transactions.slice(0, LIMIT);
 
+  const handleCreateTransaction = () => {
+    router.push("/(app)/transactions/new");
+  };
+
   return (
     <>
       <FlashList
@@ -95,7 +99,7 @@ export default function HomeScreen() {
       />
       <Button
         className="native:w-14 absolute bottom-4 right-4 w-11 rounded-full p-0"
-        // onPress={handleCreateCategory}
+        onPress={handleCreateTransaction}
         size="lg"
       >
         <PlusIcon className="text-white" />

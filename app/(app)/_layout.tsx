@@ -1,6 +1,4 @@
-// app/(app)/_layout.tsx
 import { Stack } from "expo-router";
-import { Platform } from "react-native";
 
 export default function AppLayout() {
   return (
@@ -9,8 +7,14 @@ export default function AppLayout() {
       <Stack.Screen
         name="categories/[id]"
         options={{
-          presentation: Platform.OS === "ios" ? "formSheet" : "modal",
-          sheetGrabberVisible: true,
+          presentation: "modal",
+          headerLargeTitle: true
+        }}
+      />
+      <Stack.Screen
+        name="transactions/[id]"
+        options={{
+          presentation: "modal",
           headerLargeTitle: true
         }}
       />

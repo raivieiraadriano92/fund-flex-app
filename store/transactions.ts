@@ -100,8 +100,6 @@ export const useTransactionsStore = create<TransactionsStore>()(
           user_id_param: userId
         });
 
-        console.log(data);
-
         if (data) {
           set({ totalBalance: data });
         }
