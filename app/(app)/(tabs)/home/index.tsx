@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 
 import { FlashList } from "@shopify/flash-list";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity, View } from "react-native";
 
+import { SeeAllTransactionsButton } from "~/components/features/transactions/see-all-transactions-button";
 import { TransactionItem } from "~/components/features/transactions/transaction-item";
 import { Amount } from "~/components/ui/amount";
 import { Button } from "~/components/ui/button";
@@ -28,12 +29,18 @@ export default function HomeScreen() {
   return (
     <>
       <FlashList
+        contentInsetAdjustmentBehavior="automatic"
         data={recentTransactions}
         contentContainerStyle={{
           padding: 24
         }}
         estimatedItemSize={64}
         ItemSeparatorComponent={(props) => <Separator {...props} />}
+        ListFooterComponent={
+          <View className="items-center pt-3">
+            <SeeAllTransactionsButton />
+          </View>
+        }
         ListHeaderComponent={
           <View className="gap-6 pb-3">
             <View className="gap-1">
@@ -72,11 +79,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View className="flex-row items-center justify-between">
               <P className="font-semibold">History</P>
-              <Button className="px-2" size="sm" variant="ghost">
-                <Text className="text-primary group-active:text-primary">
-                  See All
-                </Text>
-              </Button>
+              <SeeAllTransactionsButton />
             </View>
           </View>
         }

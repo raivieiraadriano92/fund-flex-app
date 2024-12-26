@@ -115,6 +115,7 @@ export default function CategoryFormScreen() {
         }}
       />
       <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="p-6"
         keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}

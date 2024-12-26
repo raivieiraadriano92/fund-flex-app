@@ -51,6 +51,7 @@ export default function CategoriesScreen() {
   return (
     <>
       <FlashList
+        contentInsetAdjustmentBehavior="automatic"
         data={filteredCategories}
         contentContainerStyle={{
           padding: 24

@@ -12,13 +12,14 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        animation: "shift"
+        animation: "shift",
+        headerShown: false
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
-          title: "Home",
+          tabBarLabel: "Home",
           tabBarIcon: ({ color, size }) => (
             <HomeIcon size={size} color={color} />
           )
@@ -27,7 +28,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="categories"
         options={{
-          title: "Categories",
+          tabBarLabel: "Categories",
           tabBarIcon: ({ color, size }) => (
             <LayoutGridIcon size={size} color={color} />
           )
@@ -36,7 +37,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="analytics"
         options={{
-          title: "Analytics",
+          tabBarLabel: "Analytics",
           tabBarIcon: ({ color, size }) => (
             <BarChart3Icon size={size} color={color} />
           )
@@ -45,7 +46,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="goals"
         options={{
-          title: "Goals",
+          tabBarLabel: "Goals",
           tabBarIcon: ({ color, size }) => (
             <TargetIcon size={size} color={color} />
           )
@@ -54,7 +55,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          tabBarLabel: "Settings",
           tabBarIcon: ({ color, size }) => (
             <SettingsIcon size={size} color={color} />
           )
