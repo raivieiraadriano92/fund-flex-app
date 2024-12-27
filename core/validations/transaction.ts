@@ -19,7 +19,8 @@ export const transactionFormSchema = z.object({
   }),
   category_id: z.string({
     required_error: "Category is required"
-  })
+  }),
+  goal_id: z.string().optional()
 });
 
 export type TransactionFormSchema = z.infer<typeof transactionFormSchema>;

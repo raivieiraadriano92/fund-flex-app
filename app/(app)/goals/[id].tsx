@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { HeaderButton } from "@react-navigation/elements";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
@@ -102,6 +103,20 @@ export default function GoalFormScreen() {
     <>
       <Stack.Screen
         options={{
+          headerRight: () =>
+            isEditing && (
+              <HeaderButton
+                accessibilityLabel="Delete category"
+                disabled={isDeleting}
+                onPress={handleDelete}
+              >
+                {isDeleting ? (
+                  <ActivityIndicator className="text-destructive" />
+                ) : (
+                  <TrashIcon className="text-destructive" />
+                )}
+              </HeaderButton>
+            ),
           headerTitle: goal ? `${goal?.emoji} ${goal?.title}` : "🎯 New Goal"
         }}
       />
@@ -153,23 +168,13 @@ export default function GoalFormScreen() {
             value={form.watch("title")}
           />
 
-          <Button onPress={form.handleSubmit(onSubmit)} disabled={isLoading}>
+          <Button
+            onPress={form.handleSubmit(onSubmit)}
+            disabled={isLoading || isDeleting}
+          >
             <Text>{isEditing ? "Update" : "Create"} Goal</Text>
             {isLoading && <ActivityIndicator color="white" />}
           </Button>
-
-          {isEditing && (
-            <Button
-              className="mt-4"
-              disabled={isDeleting}
-              onPress={handleDelete}
-              variant="destructive"
-            >
-              <TrashIcon className="text-destructive-foreground" />
-              <Text className="text-destructive-foreground">Delete Goal</Text>
-              {isDeleting && <ActivityIndicator color="white" />}
-            </Button>
-          )}
         </View>
       </ScrollView>
     </>

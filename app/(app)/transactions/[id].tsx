@@ -1,18 +1,22 @@
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { HeaderButton } from "@react-navigation/elements";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
+import CurrencyInput from "react-native-currency-input";
 import { toast } from "sonner-native";
 
 import type { TransactionFormData } from "~/core/types/transaction";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Picker } from "~/components/ui/picker";
 import { SegmentedControl } from "~/components/ui/segmented-control";
 import { Text } from "~/components/ui/text";
-import { P } from "~/components/ui/typography";
+import { Small } from "~/components/ui/typography";
 import { transactionFormSchema } from "~/core/validations/transaction";
 import { TrashIcon } from "~/lib/icons";
 import { useCategoriesStore } from "~/store/categories";
@@ -41,17 +45,14 @@ export default function TransactionFormScreen() {
   const { createTransaction, deleteTransaction, updateTransaction } =
     useTransactionsStore();
 
-  const form = useForm<TransactionFormData>({
-    resolver: zodResolver(transactionFormSchema),
-    defaultValues: transaction ?? {
-      type: "expense",
-      amount: 0,
-      title: "",
-      datetime: new Date().toISOString(),
-      category_id: "",
-      goal_id: undefined
-    }
-  });
+  const { control, handleSubmit, setValue, watch } =
+    useForm<TransactionFormData>({
+      resolver: zodResolver(transactionFormSchema),
+      defaultValues: transaction ?? {
+        type: "expense",
+        datetime: new Date().toISOString()
+      }
+    });
 
   const onSubmit = async (data: TransactionFormData) => {
     try {
@@ -66,7 +67,7 @@ export default function TransactionFormScreen() {
       router.back();
 
       toast.success("Transaction saved successfully.");
-    } catch (error) {
+    } catch (_error) {
       toast.error(
         "An error occurred while saving the transaction. Please try again."
       );
@@ -106,13 +107,27 @@ export default function TransactionFormScreen() {
   };
 
   const filteredCategories = categories.filter(
-    (category) => category.type === form.watch("type")
+    (category) => category.type === watch("type")
   );
 
   return (
     <>
       <Stack.Screen
         options={{
+          headerRight: () =>
+            isEditing && (
+              <HeaderButton
+                accessibilityLabel="Delete category"
+                disabled={isDeleting}
+                onPress={handleDelete}
+              >
+                {isDeleting ? (
+                  <ActivityIndicator className="text-destructive" />
+                ) : (
+                  <TrashIcon className="text-destructive" />
+                )}
+              </HeaderButton>
+            ),
           headerTitle: transaction ? transaction?.title : "💰 New Transaction"
         }}
       />
@@ -123,106 +138,130 @@ export default function TransactionFormScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="gap-6">
-          <View>
-            <P className="mb-2">Type</P>
-            <SegmentedControl
-              values={["Expense", "Income"]}
-              selectedIndex={form.watch("type") === "expense" ? 0 : 1}
-              onChange={(event) => {
-                form.setValue(
-                  "type",
-                  event.nativeEvent.selectedSegmentIndex === 0
-                    ? "expense"
-                    : "income"
-                );
+          <Controller
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <View className="gap-2">
+                <Label>Type</Label>
+                <SegmentedControl
+                  values={["Expense", "Income"]}
+                  selectedIndex={value === "expense" ? 0 : 1}
+                  onChange={(event) => {
+                    onChange(
+                      event.nativeEvent.selectedSegmentIndex === 0
+                        ? "expense"
+                        : "income"
+                    );
 
-                // Clear category when type changes since they're different
-                form.setValue("category_id", "");
-              }}
-            />
-          </View>
+                    // Clear category when type changes since they're different
+                    setValue("category_id", "");
+                  }}
+                />
+              </View>
+            )}
+            name="type"
+          />
 
-          <View>
-            <P className="mb-2">Amount</P>
-            <Input
-              keyboardType="numeric"
-              placeholder="Enter amount"
-              value={form.watch("amount").toString()}
-              onChangeText={(value) => {
-                const amount = parseFloat(value) || 0;
+          <Controller
+            control={control}
+            render={({
+              field: { onChange, onBlur, value },
+              fieldState: { error }
+            }) => (
+              <View className="gap-2">
+                <Label>Amount</Label>
+                <CurrencyInput
+                  className="text-5xl font-bold text-foreground"
+                  keyboardType="number-pad"
+                  onBlur={onBlur}
+                  onChangeValue={(value) => onChange(value ?? 0)}
+                  placeholder="$0,00"
+                  placeholderClassName="text-muted-foreground"
+                  prefix="$"
+                  style={{ lineHeight: 57.6 }}
+                  value={value}
+                />
+                {!!error?.message && (
+                  <Small className="text-destructive">{error?.message}</Small>
+                )}
+              </View>
+            )}
+            name="amount"
+          />
 
-                form.setValue("amount", amount);
-              }}
-              error={form.formState.errors.amount?.message}
-            />
-          </View>
+          <Controller
+            control={control}
+            render={({
+              field: { onChange, onBlur, value },
+              fieldState: { error }
+            }) => (
+              <Input
+                error={error?.message}
+                label="Title"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                placeholder="Enter title"
+                value={value}
+              />
+            )}
+            name="title"
+          />
 
-          <View>
-            <P className="mb-2">Title</P>
-            <Input
-              placeholder="Enter title"
-              value={form.watch("title")}
-              onChangeText={(value) => form.setValue("title", value)}
-              error={form.formState.errors.title?.message}
-            />
-          </View>
+          <Controller
+            control={control}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <Picker
+                error={error?.message}
+                label="Category"
+                onSelect={onChange}
+                options={filteredCategories}
+                optionLabelToken="title"
+                optionValueToken="id"
+                placeholder="Select category"
+                value={value}
+              />
+            )}
+            name="category_id"
+          />
 
-          <View>
-            <P className="mb-2">Category</P>
-            {/* This would be a custom picker/selector component */}
-            <Input
-              placeholder="Select category"
-              //   value={
-              //     categories.find((c) => c.id === form.watch("category_id"))
-              //       ?.title ?? ""
-              //   }
-              value={form.watch("category_id")}
-              onChangeText={(value) => form.setValue("category_id", value)}
-              error={form.formState.errors.category_id?.message}
-            />
-          </View>
+          <Controller
+            control={control}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <Input
+                label="Date"
+                onChangeText={onChange}
+                placeholder="Select date"
+                value={new Date(value).toLocaleDateString()}
+                error={error?.message}
+              />
+            )}
+            name="datetime"
+          />
 
-          <View>
-            <P className="mb-2">Date</P>
-            {/* This would be a date picker component */}
-            <Input
-              placeholder="Select date"
-              value={new Date(form.watch("datetime")).toLocaleDateString()}
-              error={form.formState.errors.datetime?.message}
-            />
-          </View>
+          <Controller
+            control={control}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <Picker
+                error={error?.message}
+                label="Link to Goal (Optional)"
+                onSelect={onChange}
+                options={goals}
+                optionLabelToken="title"
+                optionValueToken="id"
+                placeholder="Select goal"
+                value={value}
+              />
+            )}
+            name="goal_id"
+          />
 
-          {/* Goal selection would be optional */}
-          <View>
-            <P className="mb-2">Link to Goal (Optional)</P>
-            {/* This would be a custom picker/selector component */}
-            <Input
-              placeholder="Select goal"
-              value={
-                goals.find((g) => g.id === form.watch("goal_id"))?.title ?? ""
-              }
-            />
-          </View>
-
-          <Button onPress={form.handleSubmit(onSubmit)} disabled={isLoading}>
+          <Button
+            onPress={handleSubmit(onSubmit)}
+            disabled={isLoading || isDeleting}
+          >
             <Text>{isEditing ? "Update" : "Create"} Transaction</Text>
             {isLoading && <ActivityIndicator color="white" />}
           </Button>
-
-          {isEditing && (
-            <Button
-              className="mt-4"
-              disabled={isDeleting}
-              onPress={handleDelete}
-              variant="destructive"
-            >
-              <TrashIcon className="text-destructive-foreground" />
-              <Text className="text-destructive-foreground">
-                Delete Category
-              </Text>
-              {isDeleting && <ActivityIndicator color="white" />}
-            </Button>
-          )}
         </View>
       </ScrollView>
     </>

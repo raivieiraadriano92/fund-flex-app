@@ -1,4 +1,6 @@
 import {
+  CircleIcon,
+  CheckCircleIcon,
   ChevronDownIcon,
   HomeIcon,
   LayoutGridIcon,
@@ -15,6 +17,10 @@ import {
 import { AppleIcon } from "./AppleIcon";
 import { GoogleIcon } from "./GoogleIcon";
 import { iconWithClassName } from "./iconWithClassName";
+
+iconWithClassName(CircleIcon);
+
+iconWithClassName(CheckCircleIcon);
 
 iconWithClassName(ChevronDownIcon);
 
@@ -45,6 +51,8 @@ iconWithClassName(GoogleIcon);
 iconWithClassName(UserIcon);
 
 export {
+  CircleIcon,
+  CheckCircleIcon,
   ChevronDownIcon,
   CirclePlusIcon,
   TrashIcon,
