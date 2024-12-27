@@ -130,6 +130,7 @@ export default function GoalFormScreen() {
           <View className="gap-2">
             <Label>Goal amount</Label>
             <CurrencyInput
+              autoFocus
               className="text-5xl font-bold text-foreground"
               keyboardType="number-pad"
               onChangeValue={(value) => form.setValue("amount", value ?? 0)}

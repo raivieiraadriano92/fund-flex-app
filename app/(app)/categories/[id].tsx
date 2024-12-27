@@ -163,6 +163,7 @@ export default function CategoryFormScreen() {
           </View>
 
           <Input
+            autoFocus
             error={form.formState.errors.title?.message}
             label="Title"
             onChangeText={(value) => form.setValue("title", value)}

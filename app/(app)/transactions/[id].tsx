@@ -171,6 +171,7 @@ export default function TransactionFormScreen() {
               <View className="gap-2">
                 <Label>Amount</Label>
                 <CurrencyInput
+                  autoFocus
                   className="text-5xl font-bold text-foreground"
                   keyboardType="number-pad"
                   onBlur={onBlur}
