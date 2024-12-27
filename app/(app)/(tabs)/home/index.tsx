@@ -1,7 +1,5 @@
-import { useMemo } from "react";
-
 import { FlashList } from "@shopify/flash-list";
-import { Stack, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { TouchableOpacity, View } from "react-native";
 
 import { SeeAllTransactionsButton } from "~/components/features/transactions/see-all-transactions-button";
@@ -10,7 +8,7 @@ import { Amount } from "~/components/ui/amount";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { Text } from "~/components/ui/text";
-import { H1, H2, Muted, P } from "~/components/ui/typography";
+import { H1, Muted, P } from "~/components/ui/typography";
 import {
   PlusIcon,
   CirclePlusIcon,
@@ -30,6 +28,8 @@ export default function HomeScreen() {
     router.push("/(app)/transactions/new");
   };
 
+  const hasTransactions = transactions.length > 0;
+
   return (
     <>
       <FlashList
@@ -41,20 +41,26 @@ export default function HomeScreen() {
         estimatedItemSize={64}
         ItemSeparatorComponent={(props) => <Separator {...props} />}
         ListFooterComponent={
-          <View className="items-center pt-3">
-            <SeeAllTransactionsButton />
-          </View>
+          transactions.length === LIMIT ? (
+            <View className="items-center pt-3">
+              <SeeAllTransactionsButton />
+            </View>
+          ) : null
         }
         ListHeaderComponent={
           <View className="gap-6 pb-3">
-            <View className="gap-1">
-              <Muted className="text-muted-foreground">Total Balance</Muted>
-              <Amount
-                as={H1}
-                amount={totalBalance}
-                type={totalBalance > 0 ? "income" : "expense"}
-              />
-            </View>
+            {hasTransactions ? (
+              <View className="gap-1">
+                <Muted className="text-muted-foreground">Total Balance</Muted>
+                <Amount
+                  as={H1}
+                  amount={totalBalance}
+                  type={totalBalance > 0 ? "income" : "expense"}
+                />
+              </View>
+            ) : (
+              <P>Start tracking your finances by:</P>
+            )}
             <TouchableOpacity
               className="flex-row items-center gap-3 rounded-xl border border-border p-3"
               onPress={() => router.push("/categories/new")}
@@ -81,10 +87,19 @@ export default function HomeScreen() {
               </View>
               <CirclePlusIcon className="rounded-full bg-primary-foreground text-primary" />
             </TouchableOpacity>
-            <View className="flex-row items-center justify-between">
-              <P className="font-semibold">History</P>
-              <SeeAllTransactionsButton />
-            </View>
+            {hasTransactions ? (
+              <View className="flex-row items-center justify-between">
+                <P className="font-semibold">History</P>
+                <SeeAllTransactionsButton />
+              </View>
+            ) : (
+              <View className="gap-6">
+                <Muted className="text-center">or</Muted>
+                <Button onPress={handleCreateTransaction}>
+                  <Text>Add your first transaction</Text>
+                </Button>
+              </View>
+            )}
           </View>
         }
         renderItem={({ item }) => (
@@ -97,13 +112,15 @@ export default function HomeScreen() {
         )}
         showsVerticalScrollIndicator={false}
       />
-      <Button
-        className="native:w-14 absolute bottom-4 right-4 w-11 rounded-full p-0"
-        onPress={handleCreateTransaction}
-        size="lg"
-      >
-        <PlusIcon className="text-white" />
-      </Button>
+      {hasTransactions && (
+        <Button
+          className="native:w-14 absolute bottom-4 right-4 w-11 rounded-full p-0"
+          onPress={handleCreateTransaction}
+          size="lg"
+        >
+          <PlusIcon className="text-white" />
+        </Button>
+      )}
     </>
   );
 }
