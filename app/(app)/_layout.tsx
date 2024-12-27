@@ -12,6 +12,13 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
+        name="goals/[id]"
+        options={{
+          presentation: "modal",
+          headerLargeTitle: true
+        }}
+      />
+      <Stack.Screen
         name="transactions/[id]"
         options={{
           presentation: "modal",

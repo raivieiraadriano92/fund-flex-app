@@ -70,7 +70,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               className="flex-row items-center gap-3 rounded-xl border border-border p-3"
-              onPress={() => router.push("/")}
+              onPress={() => router.push("/goals/new")}
             >
               <View className="h-12 w-12 items-center justify-center rounded-lg bg-primary-foreground">
                 <TargetIcon className="text-primary" />

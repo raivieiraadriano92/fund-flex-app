@@ -43,6 +43,10 @@ export default function GoalsScreen() {
     router.push(`/(app)/goals/${goal.id}`);
   };
 
+  const handleCreateGoal = () => {
+    router.push("/(app)/goals/new");
+  };
+
   return (
     <>
       <FlashList
@@ -61,13 +65,12 @@ export default function GoalsScreen() {
         )}
         ItemSeparatorComponent={(props) => <View className="h-3" {...props} />}
         estimatedItemSize={200}
-        // contentContainerClassName="p-"
         numColumns={2}
       />
 
       <Button
         className="native:w-14 absolute bottom-4 right-4 w-11 rounded-full p-0"
-        // onPress={handleCreateTransaction}
+        onPress={handleCreateGoal}
         size="lg"
       >
         <PlusIcon className="text-white" />
