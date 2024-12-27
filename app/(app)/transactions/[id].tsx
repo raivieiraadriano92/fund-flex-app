@@ -113,7 +113,7 @@ export default function TransactionFormScreen() {
     <>
       <Stack.Screen
         options={{
-          headerTitle: transaction ? transaction?.title : "New Transaction"
+          headerTitle: transaction ? transaction?.title : "💰 New Transaction"
         }}
       />
       <ScrollView

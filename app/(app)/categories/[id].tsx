@@ -106,7 +106,7 @@ export default function CategoryFormScreen() {
         options={{
           headerTitle: category
             ? `${category?.emoji} ${category?.title}`
-            : "New Category"
+            : "📋 New Category"
         }}
       />
       <ScrollView
