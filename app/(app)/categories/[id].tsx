@@ -3,13 +3,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useForm } from "react-hook-form";
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
 import EmojiPicker from "rn-emoji-keyboard";
 import { toast } from "sonner-native";
 
@@ -17,9 +11,10 @@ import type { CategoryFormData } from "~/core/types/category";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { PickerButton } from "~/components/ui/picker";
 import { SegmentedControl } from "~/components/ui/segmented-control";
 import { Text } from "~/components/ui/text";
-import { P } from "~/components/ui/typography";
 import { categoryFormSchema } from "~/core/validations/category";
 import { TrashIcon } from "~/lib/icons";
 import { useCategoriesStore } from "~/store/categories";
@@ -121,8 +116,8 @@ export default function CategoryFormScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View className="gap-6">
-          <View>
-            <P className="mb-2">Type</P>
+          <View className="gap-2">
+            <Label>Type</Label>
             <SegmentedControl
               values={["Expense", "Income"]}
               selectedIndex={form.watch("type") === "expense" ? 0 : 1}
@@ -137,14 +132,13 @@ export default function CategoryFormScreen() {
             />
           </View>
 
-          <View>
-            <P className="mb-2">Emoji</P>
-            <TouchableOpacity
-              className="h-32 w-32 items-center justify-center self-center rounded-3xl border-2 border-primary bg-primary-foreground"
+          <View className="gap-2">
+            <Label>Emoji</Label>
+            <PickerButton
               onPress={() => setIsEmojiPickerOpen(true)}
-            >
-              <Text className="text-4xl">{form.watch("emoji")}</Text>
-            </TouchableOpacity>
+              placeholder="Select emoji"
+              title={form.watch("emoji")}
+            />
             <EmojiPicker
               open={isEmojiPickerOpen}
               onClose={() => setIsEmojiPickerOpen(false)}
@@ -153,15 +147,13 @@ export default function CategoryFormScreen() {
             />
           </View>
 
-          <View>
-            <P className="mb-2">Title</P>
-            <Input
-              placeholder="Enter category title"
-              value={form.watch("title")}
-              onChangeText={(value) => form.setValue("title", value)}
-              error={form.formState.errors.title?.message}
-            />
-          </View>
+          <Input
+            error={form.formState.errors.title?.message}
+            label="Title"
+            onChangeText={(value) => form.setValue("title", value)}
+            placeholder="Enter category title"
+            value={form.watch("title")}
+          />
 
           <Button onPress={form.handleSubmit(onSubmit)} disabled={isLoading}>
             <Text>{isEditing ? "Update" : "Create"} Category</Text>

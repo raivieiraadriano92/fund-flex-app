@@ -6,19 +6,22 @@ import {
   type TextInputProps as RNTextInputProps
 } from "react-native";
 
+import { Label } from "./label";
 import { Small } from "./typography";
 
 import { cn } from "~/lib/utils";
 
 interface TextInputProps extends RNTextInputProps {
   error?: string;
+  label?: string;
 }
 
 const Input = React.forwardRef<
   React.ElementRef<typeof TextInput>,
   TextInputProps
->(({ className, error, placeholderClassName, ...props }, ref) => (
+>(({ className, error, label, placeholderClassName, ...props }, ref) => (
   <View className="gap-2">
+    {!!label && <Label>{label}</Label>}
     <TextInput
       ref={ref}
       className={cn(

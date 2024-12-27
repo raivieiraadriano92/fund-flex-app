@@ -64,7 +64,7 @@ export default function GoalsScreen() {
           />
         )}
         ItemSeparatorComponent={(props) => <View className="h-3" {...props} />}
-        estimatedItemSize={200}
+        estimatedItemSize={128}
         numColumns={2}
       />
 
