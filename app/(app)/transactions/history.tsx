@@ -1,16 +1,8 @@
-// app/(app)/transactions/index.tsx
 import { useState } from "react";
 
-import { FlashList } from "@shopify/flash-list";
 import { Stack, useRouter } from "expo-router";
-import { View } from "react-native";
 
-import { TransactionItem } from "~/components/features/transactions/transaction-item";
-import { Input } from "~/components/ui/input";
-import { Separator } from "~/components/ui/separator";
-import { H2 } from "~/components/ui/typography";
-// import { SearchIcon } from "~/lib/icons";
-// import { useCategoriesStore } from "~/store/categories";
+import { TransactionList } from "~/components/features/transactions/transaction-list";
 import { useTransactionsStore } from "~/store/transactions";
 
 export default function TransactionsScreen() {
@@ -40,23 +32,11 @@ export default function TransactionsScreen() {
           title: "History"
         }}
       />
-      <FlashList
-        contentInsetAdjustmentBehavior="automatic"
-        data={filteredTransactions}
-        contentContainerStyle={{
-          padding: 24
-        }}
-        estimatedItemSize={64}
-        ItemSeparatorComponent={(props) => <Separator {...props} />}
-        renderItem={({ item }) => (
-          <TransactionItem
-            transaction={item}
-            onPress={(transaction) =>
-              router.push(`/(app)/transactions/${transaction.id}`)
-            }
-          />
-        )}
-        showsVerticalScrollIndicator={false}
+      <TransactionList
+        transactions={filteredTransactions}
+        onPressTransaction={(transaction) =>
+          router.push(`/(app)/transactions/${transaction.id}`)
+        }
       />
     </>
   );
