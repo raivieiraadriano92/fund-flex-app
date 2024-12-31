@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { TouchableOpacity, View, ViewProps } from "react-native";
 
-import type { Goal } from "~/core/types/goal";
+import type { GoalWithProgress } from "~/core/types/goal";
 
 import { Amount } from "~/components/ui/amount";
 import { Progress } from "~/components/ui/progress";
@@ -10,11 +10,11 @@ import { H4, Muted, P } from "~/components/ui/typography";
 import { CircleCheckIcon, CircleIcon } from "~/lib/icons";
 
 interface GoalCardProps extends ViewProps {
-  goal: Goal;
+  goal: GoalWithProgress;
   currentAmount: number;
   isSelectable?: boolean;
   isSelected?: boolean;
-  onPress: (goal: Goal) => void;
+  onPress: (goal: GoalWithProgress) => void;
 }
 
 export function GoalCard({

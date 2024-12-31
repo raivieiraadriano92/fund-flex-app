@@ -1,10 +1,8 @@
-import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
-import { View } from "react-native";
 
 import type { Goal } from "~/core/types/goal";
 
-import { GoalCard } from "~/components/features/goals/goal-card";
+import { GoalList } from "~/components/features/goals/goal-list";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/lib/icons";
 import { useGoalsStore } from "~/store/goals";
@@ -24,25 +22,7 @@ export default function GoalsScreen() {
 
   return (
     <>
-      <FlashList
-        contentInsetAdjustmentBehavior="automatic"
-        data={goals}
-        contentContainerStyle={{
-          padding: 24
-        }}
-        renderItem={({ index, item }) => (
-          <GoalCard
-            currentAmount={item.currentAmount}
-            goal={item}
-            onPress={handleGoalPress}
-            style={index % 2 === 0 ? { marginRight: 6 } : { marginLeft: 6 }}
-          />
-        )}
-        ItemSeparatorComponent={(props) => <View className="h-3" {...props} />}
-        estimatedItemSize={128}
-        numColumns={2}
-      />
-
+      <GoalList goals={goals} onPressGoal={handleGoalPress} />
       <Button
         className="native:w-14 absolute bottom-4 right-4 w-11 rounded-full p-0"
         onPress={handleCreateGoal}

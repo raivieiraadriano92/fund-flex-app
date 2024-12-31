@@ -1,10 +1,9 @@
 import { useState } from "react";
 
-import { FlashList } from "@shopify/flash-list";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
-import { GoalCard } from "~/components/features/goals/goal-card";
+import { GoalList } from "~/components/features/goals/goal-list";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { events } from "~/core/services/events";
@@ -38,25 +37,12 @@ export default function GoalPickerScreen() {
           headerTitle: "🎯 Goal Picker"
         }}
       />
-      <FlashList
-        contentInsetAdjustmentBehavior="automatic"
-        data={goals}
-        extraData={selectedGoalId}
-        contentContainerStyle={{
-          padding: 24
-        }}
-        estimatedItemSize={128}
-        ItemSeparatorComponent={(props) => <View className="h-3" {...props} />}
-        renderItem={({ item }) => (
-          <GoalCard
-            currentAmount={item.currentAmount}
-            goal={item}
-            isSelectable
-            isSelected={item.id === selectedGoalId}
-            onPress={(goal) => setSelectedGoalId(goal.id)}
-          />
-        )}
-        showsVerticalScrollIndicator={false}
+      <GoalList
+        goals={goals}
+        flashListProps={{ extraData: selectedGoalId }}
+        isSelectable
+        isSelected={(goal) => goal.id === selectedGoalId}
+        onPressGoal={(goal) => setSelectedGoalId(goal.id)}
       />
       <View className="pb-safe bg-white p-6">
         <Button

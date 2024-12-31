@@ -5,7 +5,7 @@ import type { Category } from "~/core/types/category";
 import { CategoryItem } from "~/components/features/categories/category-item";
 import { Separator } from "~/components/ui/separator";
 
-interface CategoriesListProps {
+interface CategoryListProps {
   categories: Category[];
   flashListProps?: Partial<FlashListProps<Category>>;
   isSelectable?: boolean;
@@ -19,14 +19,14 @@ export function CategoryList({
   isSelectable,
   isSelected,
   onPressCategory
-}: CategoriesListProps) {
+}: CategoryListProps) {
   return (
     <FlashList
-      contentInsetAdjustmentBehavior="automatic"
       data={categories}
       contentContainerStyle={{
         padding: 24
       }}
+      contentInsetAdjustmentBehavior="automatic"
       estimatedItemSize={64}
       ItemSeparatorComponent={Separator}
       renderItem={({ index, item }) => {
