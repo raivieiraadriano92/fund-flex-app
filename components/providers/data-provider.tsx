@@ -14,8 +14,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const fetchGoals = useGoalsStore((state) => state.fetchGoals);
 
-  const fetchTransactions = useTransactionsStore(
-    (state) => state.fetchTransactions
+  const fetchLatestTransactions = useTransactionsStore(
+    (state) => state.fetchLatestTransactions
   );
 
   const [isLoading, setIsLoading] = useState(true);
@@ -27,7 +27,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           await Promise.all([
             fetchCategories(),
             fetchGoals(),
-            fetchTransactions()
+            fetchLatestTransactions()
           ]);
         }
       } catch (error) {
@@ -44,7 +44,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
 
     loadData();
-  }, [fetchCategories, fetchTransactions, session?.user.id]);
+  }, [fetchCategories, fetchLatestTransactions, session?.user.id]);
 
   if (isLoading) {
     return null;
