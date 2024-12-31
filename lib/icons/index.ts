@@ -1,6 +1,6 @@
 import {
   CircleIcon,
-  CheckCircleIcon,
+  CircleCheckIcon,
   ChevronDownIcon,
   HomeIcon,
   LayoutGridIcon,
@@ -20,7 +20,7 @@ import { iconWithClassName } from "./iconWithClassName";
 
 iconWithClassName(CircleIcon);
 
-iconWithClassName(CheckCircleIcon);
+iconWithClassName(CircleCheckIcon);
 
 iconWithClassName(ChevronDownIcon);
 
@@ -52,7 +52,7 @@ iconWithClassName(UserIcon);
 
 export {
   CircleIcon,
-  CheckCircleIcon,
+  CircleCheckIcon,
   ChevronDownIcon,
   CirclePlusIcon,
   TrashIcon,

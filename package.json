@@ -29,6 +29,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "eventemitter3": "^5.0.1",
     "expo": "^52.0.21",
     "expo-constants": "~17.0.3",
     "expo-linking": "~7.0.3",

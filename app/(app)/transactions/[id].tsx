@@ -10,6 +10,7 @@ import { toast } from "sonner-native";
 
 import type { TransactionFormData } from "~/core/types/transaction";
 
+import { CategoryPicker } from "~/components/features/categories/category-picker";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -106,9 +107,7 @@ export default function TransactionFormScreen() {
     ]);
   };
 
-  const filteredCategories = categories.filter(
-    (category) => category.type === watch("type")
-  );
+  const type = watch("type");
 
   return (
     <>
@@ -210,18 +209,20 @@ export default function TransactionFormScreen() {
 
           <Controller
             control={control}
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <Picker
-                error={error?.message}
-                label="Category"
-                onSelect={onChange}
-                options={filteredCategories}
-                optionLabelToken="title"
-                optionValueToken="id"
-                placeholder="Select category"
-                value={value}
-              />
-            )}
+            render={({ field: { onChange, value }, fieldState: { error } }) => {
+              const selectedCategory = categories.find(
+                (category) => category.id === value
+              );
+
+              return (
+                <CategoryPicker
+                  error={error?.message}
+                  onChange={onChange}
+                  selectedCategory={selectedCategory}
+                  type={type}
+                />
+              );
+            }}
             name="category_id"
           />
 
