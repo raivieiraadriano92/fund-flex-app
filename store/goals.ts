@@ -4,13 +4,10 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import { useAuthStore } from "./auth";
 
-import type { Goal, GoalFormData } from "~/core/types/goal";
+import type { GoalFormData, GoalWithProgress } from "~/core/types/goal";
 
 import { supabase } from "~/core/api/supabase";
-
-interface GoalWithProgress extends Goal {
-  current_amount: number;
-}
+import { mapGoal } from "~/core/utils/map-goal";
 
 interface GoalsState {
   goals: GoalWithProgress[];
@@ -37,30 +34,12 @@ export const useGoalsStore = create<GoalsStore>()(
 
         const { data } = await supabase
           .from("goals")
-          .select(
-            `
-            *,
-            income_amount: transactions(amount).eq(type, 'income'),
-            expense_amount: transactions(amount).eq(type, 'expense')
-          `
-          )
+          .select("*, transactions(amount,type)")
           .eq("user_id", userId)
           .order("title");
 
-        // Transform the data to calculate net amount
-        const goalsWithProgress =
-          data?.map((goal) => ({
-            // @todo Fix this typing issue -> ParserError<"Unexpected input ...
-            // @ts-ignore
-            ...goal,
-            current_amount:
-              // @todo Fix this typing issue -> ParserError<"Unexpected input ...
-              // @ts-ignore
-              (goal.income_amount?.sum?.amount ?? 0) -
-              // @todo Fix this typing issue -> ParserError<"Unexpected input ...
-              // @ts-ignore
-              (goal.expense_amount?.sum?.amount ?? 0)
-          })) ?? [];
+        // Transform the data to calculate amount
+        const goalsWithProgress = data?.map(mapGoal) ?? [];
 
         set({ goals: goalsWithProgress });
       },
@@ -80,9 +59,10 @@ export const useGoalsStore = create<GoalsStore>()(
 
         if (newGoal) {
           set((state) => ({
-            goals: [...state.goals, { ...newGoal, current_amount: 0 }].sort(
-              (a, b) => a.title.localeCompare(b.title)
-            )
+            goals: [
+              ...state.goals,
+              { ...newGoal, currentAmount: 0, progress: 0 }
+            ].sort((a, b) => a.title.localeCompare(b.title))
           }));
         }
       },

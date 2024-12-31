@@ -11,10 +11,10 @@ import { toast } from "sonner-native";
 import type { TransactionFormData } from "~/core/types/transaction";
 
 import { CategoryPicker } from "~/components/features/categories/category-picker";
+import { GoalPicker } from "~/components/features/goals/goal-picker";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Picker } from "~/components/ui/picker";
 import { SegmentedControl } from "~/components/ui/segmented-control";
 import { Text } from "~/components/ui/text";
 import { Small } from "~/components/ui/typography";
@@ -242,18 +242,19 @@ export default function TransactionFormScreen() {
 
           <Controller
             control={control}
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <Picker
-                error={error?.message}
-                label="Link to Goal (Optional)"
-                onSelect={onChange}
-                options={goals}
-                optionLabelToken="title"
-                optionValueToken="id"
-                placeholder="Select goal"
-                value={value}
-              />
-            )}
+            render={({ field: { onChange, value }, fieldState: { error } }) => {
+              const selectedGoal = goals.find(
+                (category) => category.id === value
+              );
+
+              return (
+                <GoalPicker
+                  error={error?.message}
+                  onChange={onChange}
+                  selectedGoal={selectedGoal}
+                />
+              );
+            }}
             name="goal_id"
           />
 

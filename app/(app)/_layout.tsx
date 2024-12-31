@@ -26,6 +26,16 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
+        name="goals/picker"
+        options={({ theme }) => ({
+          presentation: "modal",
+          headerLargeTitle: true,
+          contentStyle: {
+            backgroundColor: theme.colors.primaryForeground
+          }
+        })}
+      />
+      <Stack.Screen
         name="transactions/[id]"
         options={{
           presentation: "modal",

@@ -1,16 +1,19 @@
 import { useMemo } from "react";
 
-import { TouchableOpacity, ViewProps } from "react-native";
+import { TouchableOpacity, View, ViewProps } from "react-native";
 
 import type { Goal } from "~/core/types/goal";
 
 import { Amount } from "~/components/ui/amount";
 import { Progress } from "~/components/ui/progress";
 import { H4, Muted, P } from "~/components/ui/typography";
+import { CircleCheckIcon, CircleIcon } from "~/lib/icons";
 
 interface GoalCardProps extends ViewProps {
   goal: Goal;
   currentAmount: number;
+  isSelectable?: boolean;
+  isSelected?: boolean;
   onPress: (goal: Goal) => void;
 }
 
@@ -18,6 +21,8 @@ export function GoalCard({
   className,
   goal,
   currentAmount,
+  isSelectable,
+  isSelected,
   onPress,
   ...props
 }: GoalCardProps) {
@@ -42,14 +47,27 @@ export function GoalCard({
       className={`h-32 flex-1 justify-center gap-2 rounded-xl bg-white px-3 ${className}`}
       {...props}
     >
-      {/* Header with emoji and title */}
-      <P
-        className="font-medium"
-        numberOfLines={1}
-      >{`${goal.emoji} ${goal.title}`}</P>
+      <View className="flex-row justify-between">
+        <View>
+          {/* Header with emoji and title */}
+          <P
+            className="font-medium"
+            numberOfLines={1}
+          >{`${goal.emoji} ${goal.title}`}</P>
 
-      {/* Amount target */}
-      <Amount amount={goal.amount} as={H4} className="text-primary" />
+          {/* Amount target */}
+          <Amount amount={goal.amount} as={H4} className="text-primary" />
+        </View>
+        {isSelectable && (
+          <>
+            {isSelected ? (
+              <CircleCheckIcon className="text-primary" />
+            ) : (
+              <CircleIcon className="text-muted-foreground" />
+            )}
+          </>
+        )}
+      </View>
 
       <Progress
         className={`${progressColors[1]}`}

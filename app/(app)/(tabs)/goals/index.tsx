@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import { View } from "react-native";
@@ -10,34 +8,11 @@ import { GoalCard } from "~/components/features/goals/goal-card";
 import { Button } from "~/components/ui/button";
 import { PlusIcon } from "~/lib/icons";
 import { useGoalsStore } from "~/store/goals";
-import { useTransactionsStore } from "~/store/transactions";
 
 export default function GoalsScreen() {
   const router = useRouter();
 
   const goals = useGoalsStore((state) => state.goals);
-
-  const transactions = useTransactionsStore((state) => state.transactions);
-
-  const goalsWithProgress = useMemo(
-    () =>
-      goals.map((goal) => {
-        const linkedTransactions = transactions.filter(
-          (t) => t.goal_id === goal.id
-        );
-
-        const currentAmount = linkedTransactions.reduce(
-          (total, t) => total + (t.type === "income" ? t.amount : -t.amount),
-          0
-        );
-
-        return {
-          ...goal,
-          currentAmount
-        };
-      }),
-    [goals, transactions]
-  );
 
   const handleGoalPress = (goal: Goal) => {
     router.push(`/(app)/goals/${goal.id}`);
@@ -51,7 +26,7 @@ export default function GoalsScreen() {
     <>
       <FlashList
         contentInsetAdjustmentBehavior="automatic"
-        data={goalsWithProgress}
+        data={goals}
         contentContainerStyle={{
           padding: 24
         }}

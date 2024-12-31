@@ -10,3 +10,8 @@ export type GoalFormData = Omit<
   GoalInsert,
   "id" | "created_at" | "updated_at" | "user_id"
 >;
+
+export type GoalWithProgress = Omit<Goal, "transactions"> & {
+  currentAmount: number;
+  progress: number;
+};
