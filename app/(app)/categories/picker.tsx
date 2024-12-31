@@ -1,12 +1,11 @@
 import { useMemo, useState } from "react";
 
-import { FlashList } from "@shopify/flash-list";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
 import { CategoryItem } from "~/components/features/categories/category-item";
+import { CategoryList } from "~/components/features/categories/category-list";
 import { Button } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
 import { Text } from "~/components/ui/text";
 import { events } from "~/core/services/events";
 import { Category, CategoryType } from "~/core/types/category";
@@ -29,23 +28,6 @@ export default function CategoryPickerScreen() {
     [categories, type]
   );
 
-  const renderItem = ({ index, item }: { index: number; item: Category }) => {
-    const isFirst = index === 0;
-
-    const isLast = index === filteredCategories.length - 1;
-
-    return (
-      <CategoryItem
-        category={item}
-        isFirst={isFirst}
-        isLast={isLast}
-        isSelectable
-        isSelected={item.id === selectedCategoryId}
-        onPress={(category) => setSelectedCategoryId(category.id)}
-      />
-    );
-  };
-
   const handleContinue = () => {
     if (!selectedCategoryId) {
       return;
@@ -63,17 +45,12 @@ export default function CategoryPickerScreen() {
           headerTitle: "📋 Category Picker"
         }}
       />
-      <FlashList
-        contentInsetAdjustmentBehavior="automatic"
-        data={filteredCategories}
-        extraData={selectedCategoryId}
-        contentContainerStyle={{
-          padding: 24
-        }}
-        estimatedItemSize={64}
-        ItemSeparatorComponent={Separator}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
+      <CategoryList
+        categories={filteredCategories}
+        flashListProps={{ extraData: selectedCategoryId }}
+        isSelectable
+        isSelected={(category) => category.id === selectedCategoryId}
+        onPressCategory={(category) => setSelectedCategoryId(category.id)}
       />
       <View className="pb-safe p-6">
         <Button
