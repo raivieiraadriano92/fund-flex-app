@@ -1,4 +1,4 @@
-import { Transaction } from "../types/transaction";
+import { Transaction, TransactionTypeWithAll } from "../types/transaction";
 
 import { supabase } from "./supabase";
 
@@ -8,11 +8,15 @@ import { LIMIT } from "~/store/transactions";
 type FetchTransactionsOptions = {
   page: number;
   searchQuery?: string;
+  type?: TransactionTypeWithAll;
+  categoryId?: string;
 };
 
 export const fetchFilteredTransactions = async ({
   page,
-  searchQuery
+  searchQuery,
+  categoryId,
+  type
 }: FetchTransactionsOptions) => {
   try {
     const userId = useAuthStore.getState().session?.user.id;
@@ -34,6 +38,14 @@ export const fetchFilteredTransactions = async ({
 
     if (searchQuery) {
       query.ilike("title", `%${searchQuery}%`);
+    }
+
+    if (type && type !== "all") {
+      query.eq("type", type);
+    }
+
+    if (categoryId) {
+      query.eq("category_id", categoryId);
     }
 
     const { data } = await query;

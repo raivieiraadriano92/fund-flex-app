@@ -1,13 +1,18 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Stack, useRouter } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
+import { ActiveTransactionFilters } from "~/components/features/transactions/active-transaction-filters";
 import { TransactionList } from "~/components/features/transactions/transaction-list";
 import { Button } from "~/components/ui/button";
-import { P } from "~/components/ui/typography";
+import { Muted, P } from "~/components/ui/typography";
 import { fetchFilteredTransactions } from "~/core/api/transactions";
-import { Transaction } from "~/core/types/transaction";
+import { events } from "~/core/services/events";
+import {
+  Transaction,
+  TransactionFiltersFormData
+} from "~/core/types/transaction";
 import { SlidersHorizontalIcon } from "~/lib/icons";
 import { LIMIT, useTransactionsStore } from "~/store/transactions";
 
@@ -71,7 +76,9 @@ export default function TransactionsHistoryScreen() {
 
       const newTransactions = await fetchFilteredTransactions({
         page: 1,
-        searchQuery: searchQuery.current
+        searchQuery: searchQuery.current,
+        type: filters.current.type,
+        categoryId: filters.current.category_id
       });
 
       if (newTransactions.length !== LIMIT) {
@@ -93,7 +100,9 @@ export default function TransactionsHistoryScreen() {
 
     const newTransactions = await fetchFilteredTransactions({
       page: page + 1,
-      searchQuery: searchQuery.current
+      searchQuery: searchQuery.current,
+      type: filters.current.type,
+      categoryId: filters.current.category_id
     });
 
     setIsLoading(false);
@@ -106,6 +115,43 @@ export default function TransactionsHistoryScreen() {
 
     setPage((prev) => prev + 1);
   };
+
+  const filters = useRef<TransactionFiltersFormData>({
+    type: "all"
+  });
+
+  useEffect(() => {
+    const handleFilters = async (filtersData: TransactionFiltersFormData) => {
+      filters.current = filtersData;
+
+      setPage(1);
+
+      setHasMore(true);
+
+      setIsLoading(true);
+
+      const newTransactions = await fetchFilteredTransactions({
+        page: 1,
+        searchQuery: searchQuery.current,
+        type: filtersData.type,
+        categoryId: filtersData.category_id
+      });
+
+      if (newTransactions.length !== LIMIT) {
+        setHasMore(false);
+      }
+
+      setTransactions(newTransactions);
+
+      setIsLoading(false);
+    };
+
+    events.on("transaction:applyFilter", handleFilters);
+
+    return () => {
+      events.off("transaction:applyFilter");
+    };
+  }, []);
 
   return (
     <>
@@ -123,21 +169,33 @@ export default function TransactionsHistoryScreen() {
       <TransactionList
         transactions={transactions}
         flashListProps={{
+          ListEmptyComponent: !isLoading ? (
+            <View className="flex-1 items-center justify-center">
+              <Muted className="text-center">No transactions found</Muted>
+            </View>
+          ) : null,
           ListFooterComponent: isLoading ? <ActivityIndicator /> : null,
           ListHeaderComponent: (
-            <View className="flex-row items-center justify-between pb-3">
-              <P className="font-semibold">Filters</P>
-              <Button
-                className="px-2"
-                onPress={() => router.push("/transactions/filters")}
-                size="sm"
-                variant="ghost"
-              >
-                <SlidersHorizontalIcon
-                  className="h-4 w-4 text-primary"
-                  size={16}
-                />
-              </Button>
+            <View className=" pb-3">
+              <View className="flex-row items-center justify-between">
+                <P className="font-semibold">Filters</P>
+                <Button
+                  className="px-2"
+                  onPress={() =>
+                    router.push(
+                      `/transactions/filters?type=${filters.current.type ?? "all"}&category_id=${filters.current.category_id ?? ""}`
+                    )
+                  }
+                  size="sm"
+                  variant="ghost"
+                >
+                  <SlidersHorizontalIcon
+                    className="h-4 w-4 text-primary"
+                    size={16}
+                  />
+                </Button>
+              </View>
+              <ActiveTransactionFilters />
             </View>
           ),
           onEndReached: fetchMoreTransactions,

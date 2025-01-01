@@ -11,6 +11,7 @@ import { Category, CategoryType } from "~/core/types/category";
 
 interface CategoryPickerProps {
   error?: string;
+  isDisabled?: boolean;
   onChange: (categoryId: string) => void;
   selectedCategory?: Category;
   type: CategoryType;
@@ -18,6 +19,7 @@ interface CategoryPickerProps {
 
 export function CategoryPicker({
   error,
+  isDisabled,
   onChange,
   selectedCategory,
   type
@@ -38,6 +40,7 @@ export function CategoryPicker({
     <View className="gap-2">
       <Label>Category</Label>
       <PickerButton
+        disabled={isDisabled}
         onPress={() =>
           router.push(
             `/categories/picker?type=${type}&defaultValue=${selectedCategory?.id || ""}`
