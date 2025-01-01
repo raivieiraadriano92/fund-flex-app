@@ -12,13 +12,15 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null);
 
   const signInWithApple = async () => {
+    throw new Error("Not implemented");
+
     try {
       setIsLoading((prev) => ({ ...prev, apple: true }));
 
       // @todo implement Apple sign-in
-      const { error } = await supabase.auth.signInAnonymously();
+      // const { error } = await supabase.auth.signInAnonymously();
 
-      if (error) throw error;
+      // if (error) throw error;
     } catch (err) {
       setError(err.message);
     } finally {
@@ -27,13 +29,15 @@ export function useAuth() {
   };
 
   const signInWithGoogle = async () => {
+    throw new Error("Not implemented");
+
     try {
       setIsLoading((prev) => ({ ...prev, google: true }));
 
       // @todo implement Google sign-in
-      const { error } = await supabase.auth.signInAnonymously();
+      // const { error } = await supabase.auth.signInAnonymously();
 
-      if (error) throw error;
+      // if (error) throw error;
     } catch (err) {
       setError(err.message);
     } finally {

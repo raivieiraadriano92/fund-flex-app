@@ -2,10 +2,12 @@ import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HeaderButton } from "@react-navigation/elements";
+import { format, parseISO } from "date-fns";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
 import CurrencyInput from "react-native-currency-input";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { toast } from "sonner-native";
 
 import type { TransactionFormData } from "~/core/types/transaction";
@@ -15,11 +17,12 @@ import { GoalPicker } from "~/components/features/goals/goal-picker";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { PickerButton } from "~/components/ui/picker";
 import { SegmentedControl } from "~/components/ui/segmented-control";
 import { Text } from "~/components/ui/text";
 import { Small } from "~/components/ui/typography";
 import { transactionFormSchema } from "~/core/validations/transaction";
-import { TrashIcon } from "~/lib/icons";
+import { CalendarIcon, TrashIcon } from "~/lib/icons";
 import { useCategoriesStore } from "~/store/categories";
 import { useGoalsStore } from "~/store/goals";
 import { useTransactionsStore } from "~/store/transactions";
@@ -34,6 +37,8 @@ export default function TransactionFormScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   const transaction = useTransactionsStore((state) =>
     isEditing ? state.transactions.find((t) => t.id === id) : null
@@ -229,13 +234,30 @@ export default function TransactionFormScreen() {
           <Controller
             control={control}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <Input
-                label="Date"
-                onChangeText={onChange}
-                placeholder="Select date"
-                value={new Date(value).toLocaleDateString()}
-                error={error?.message}
-              />
+              <View className="gap-2">
+                <Label>Date</Label>
+                <PickerButton
+                  Icon={CalendarIcon}
+                  onPress={() => setDatePickerVisibility(true)}
+                  placeholder="Select date"
+                  title={
+                    value && format(parseISO(value), "MMM dd, yyyy hh:mm a")
+                  }
+                />
+                {!!error && (
+                  <Small className="text-destructive">{error.message}</Small>
+                )}
+                <DateTimePickerModal
+                  mode="datetime"
+                  onCancel={() => setDatePickerVisibility(false)}
+                  onConfirm={(date) => {
+                    onChange(date.toISOString());
+
+                    setDatePickerVisibility(false);
+                  }}
+                  isVisible={isDatePickerVisible}
+                />
+              </View>
             )}
             name="datetime"
           />

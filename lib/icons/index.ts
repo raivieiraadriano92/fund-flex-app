@@ -1,4 +1,5 @@
 import {
+  CalendarIcon,
   SquareIcon,
   SquareCheckIcon,
   CircleIcon,
@@ -19,6 +20,8 @@ import {
 import { AppleIcon } from "./AppleIcon";
 import { GoogleIcon } from "./GoogleIcon";
 import { iconWithClassName } from "./iconWithClassName";
+
+iconWithClassName(CalendarIcon);
 
 iconWithClassName(SquareIcon);
 
@@ -57,6 +60,7 @@ iconWithClassName(GoogleIcon);
 iconWithClassName(UserIcon);
 
 export {
+  CalendarIcon,
   SquareIcon,
   SquareCheckIcon,
   CircleIcon,
