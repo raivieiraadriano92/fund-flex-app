@@ -49,6 +49,13 @@ export default function AppLayout() {
           headerLargeTitle: true
         }}
       />
+      <Stack.Screen
+        name="transactions/filters"
+        options={{
+          presentation: "modal",
+          headerLargeTitle: true
+        }}
+      />
     </Stack>
   );
 }

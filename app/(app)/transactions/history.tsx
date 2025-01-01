@@ -1,14 +1,17 @@
 import { useRef, useState } from "react";
 
 import { Stack, useRouter } from "expo-router";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 import { TransactionList } from "~/components/features/transactions/transaction-list";
+import { Button } from "~/components/ui/button";
+import { P } from "~/components/ui/typography";
 import { fetchFilteredTransactions } from "~/core/api/transactions";
 import { Transaction } from "~/core/types/transaction";
+import { SlidersHorizontalIcon } from "~/lib/icons";
 import { LIMIT, useTransactionsStore } from "~/store/transactions";
 
-export default function TransactionsScreen() {
+export default function TransactionsHistoryScreen() {
   const router = useRouter();
 
   const searchQuery = useRef("");
@@ -121,6 +124,22 @@ export default function TransactionsScreen() {
         transactions={transactions}
         flashListProps={{
           ListFooterComponent: isLoading ? <ActivityIndicator /> : null,
+          ListHeaderComponent: (
+            <View className="flex-row items-center justify-between pb-3">
+              <P className="font-semibold">Filters</P>
+              <Button
+                className="px-2"
+                onPress={() => router.push("/transactions/filters")}
+                size="sm"
+                variant="ghost"
+              >
+                <SlidersHorizontalIcon
+                  className="h-4 w-4 text-primary"
+                  size={16}
+                />
+              </Button>
+            </View>
+          ),
           onEndReached: fetchMoreTransactions,
           onEndReachedThreshold: 0.1
         }}

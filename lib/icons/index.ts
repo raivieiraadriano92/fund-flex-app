@@ -1,4 +1,5 @@
 import {
+  SlidersHorizontalIcon,
   CalendarIcon,
   SquareIcon,
   SquareCheckIcon,
@@ -20,6 +21,8 @@ import {
 import { AppleIcon } from "./AppleIcon";
 import { GoogleIcon } from "./GoogleIcon";
 import { iconWithClassName } from "./iconWithClassName";
+
+iconWithClassName(SlidersHorizontalIcon);
 
 iconWithClassName(CalendarIcon);
 
@@ -60,6 +63,7 @@ iconWithClassName(GoogleIcon);
 iconWithClassName(UserIcon);
 
 export {
+  SlidersHorizontalIcon,
   CalendarIcon,
   SquareIcon,
   SquareCheckIcon,
