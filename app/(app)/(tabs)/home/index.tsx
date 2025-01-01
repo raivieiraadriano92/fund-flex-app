@@ -13,12 +13,17 @@ import {
   TargetIcon,
   LayoutGridIcon
 } from "~/lib/icons";
+import { useCategoriesStore } from "~/store/categories";
 import { LIMIT, useTransactionsStore } from "~/store/transactions";
 
 export default function HomeScreen() {
   const router = useRouter();
 
   const { transactions, totalBalance } = useTransactionsStore();
+
+  const categoriesLength = useCategoriesStore(
+    (state) => state.categories.length
+  );
 
   const recentTransactions = transactions.slice(0, LIMIT);
 
@@ -55,7 +60,11 @@ export default function HomeScreen() {
               )}
               <TouchableOpacity
                 className="flex-row items-center gap-3 rounded-xl border border-border p-3"
-                onPress={() => router.push("/categories/new")}
+                onPress={() =>
+                  router.push(
+                    categoriesLength ? "/categories/new" : "/categories"
+                  )
+                }
               >
                 <View className="h-12 w-12 items-center justify-center rounded-lg bg-primary-foreground">
                   <LayoutGridIcon className="text-primary" />

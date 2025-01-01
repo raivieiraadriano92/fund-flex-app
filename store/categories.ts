@@ -15,6 +15,7 @@ interface CategoriesState {
 interface CategoriesActions {
   fetchCategories: () => Promise<void>;
   createCategory: (data: CategoryFormData) => Promise<void>;
+  createDefaultCategories: (categories: CategoryFormData[]) => Promise<void>;
   updateCategory: (id: string, data: CategoryFormData) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
 }
@@ -58,6 +59,27 @@ export const useCategoriesStore = create<CategoriesStore>()(
             categories: [...state.categories, newCategory].sort((a, b) =>
               a.title.localeCompare(b.title)
             )
+          }));
+        }
+      },
+
+      createDefaultCategories: async (categories) => {
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) throw new Error("User not found");
+
+        const { data, error } = await supabase
+          .from("categories")
+          .insert(
+            categories.map((category) => ({ ...category, user_id: userId }))
+          )
+          .select();
+
+        if (error) throw error;
+
+        if (data) {
+          set((state) => ({
+            categories: [...state.categories, ...data]
           }));
         }
       },

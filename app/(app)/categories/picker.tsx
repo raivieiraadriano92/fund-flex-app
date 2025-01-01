@@ -3,12 +3,11 @@ import { useMemo, useState } from "react";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
-import { CategoryItem } from "~/components/features/categories/category-item";
 import { CategoryList } from "~/components/features/categories/category-list";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { events } from "~/core/services/events";
-import { Category, CategoryType } from "~/core/types/category";
+import { CategoryType } from "~/core/types/category";
 import { useCategoriesStore } from "~/store/categories";
 
 export default function CategoryPickerScreen() {

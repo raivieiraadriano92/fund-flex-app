@@ -5,7 +5,7 @@ export default function GoalsLayout() {
     <Stack
       screenOptions={({ theme }) => ({
         headerLargeTitle: true,
-        title: "Goals",
+        title: "🎯 Goals",
         contentStyle: {
           backgroundColor: theme.colors.primaryForeground
         }

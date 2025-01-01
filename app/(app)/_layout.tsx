@@ -19,6 +19,13 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
+        name="categories/quick-start"
+        options={{
+          presentation: "modal",
+          headerLargeTitle: true
+        }}
+      />
+      <Stack.Screen
         name="goals/[id]"
         options={{
           presentation: "modal",

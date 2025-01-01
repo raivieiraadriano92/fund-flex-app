@@ -7,6 +7,7 @@ import { Separator } from "~/components/ui/separator";
 
 interface CategoryListProps {
   categories: Category[];
+  enableMultiSelect?: boolean;
   flashListProps?: Partial<FlashListProps<Category>>;
   isSelectable?: boolean;
   isSelected?(category: Category): boolean;
@@ -15,6 +16,7 @@ interface CategoryListProps {
 
 export function CategoryList({
   categories,
+  enableMultiSelect,
   flashListProps,
   isSelectable,
   isSelected,
@@ -37,6 +39,7 @@ export function CategoryList({
         return (
           <CategoryItem
             category={item}
+            enableMultiSelect={enableMultiSelect}
             isFirst={isFirst}
             isLast={isLast}
             isSelectable={isSelectable}
