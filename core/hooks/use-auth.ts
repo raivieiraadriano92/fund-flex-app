@@ -14,35 +14,35 @@ export function useAuth() {
   const signInWithApple = async () => {
     throw new Error("Not implemented");
 
-    try {
-      setIsLoading((prev) => ({ ...prev, apple: true }));
+    // try {
+    //   setIsLoading((prev) => ({ ...prev, apple: true }));
 
-      // @todo implement Apple sign-in
-      // const { error } = await supabase.auth.signInAnonymously();
+    //   // @todo implement Apple sign-in
+    //   // const { error } = await supabase.auth.signInAnonymously();
 
-      // if (error) throw error;
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, apple: false }));
-    }
+    //   // if (error) throw error;
+    // } catch (err) {
+    //   setError(err.message);
+    // } finally {
+    //   setIsLoading((prev) => ({ ...prev, apple: false }));
+    // }
   };
 
   const signInWithGoogle = async () => {
     throw new Error("Not implemented");
 
-    try {
-      setIsLoading((prev) => ({ ...prev, google: true }));
+    // try {
+    //   setIsLoading((prev) => ({ ...prev, google: true }));
 
-      // @todo implement Google sign-in
-      // const { error } = await supabase.auth.signInAnonymously();
+    //   // @todo implement Google sign-in
+    //   // const { error } = await supabase.auth.signInAnonymously();
 
-      // if (error) throw error;
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading((prev) => ({ ...prev, google: false }));
-    }
+    //   // if (error) throw error;
+    // } catch (err) {
+    //   setError(err.message);
+    // } finally {
+    //   setIsLoading((prev) => ({ ...prev, google: false }));
+    // }
   };
 
   const signInAnonymously = async () => {

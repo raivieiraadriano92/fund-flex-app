@@ -44,7 +44,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
 
     loadData();
-  }, [fetchCategories, fetchLatestTransactions, session?.user.id]);
+  }, [fetchCategories, fetchGoals, fetchLatestTransactions, session?.user.id]);
 
   if (isLoading) {
     return null;
