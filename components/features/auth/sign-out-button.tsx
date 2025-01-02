@@ -9,6 +9,7 @@ import { Text } from "~/components/ui/text";
 import { LogOutIcon } from "~/lib/icons";
 import { useAuthStore } from "~/store/auth";
 import { useCategoriesStore } from "~/store/categories";
+import { useCurrencyStore } from "~/store/currency";
 import { useGoalsStore } from "~/store/goals";
 import { useTransactionsStore } from "~/store/transactions";
 
@@ -28,6 +29,8 @@ export function SignOutButton() {
       useGoalsStore.getState().reset();
 
       useTransactionsStore.getState().reset();
+
+      useCurrencyStore.getState().reset();
 
       AsyncStorage.clear();
     } catch (_error) {

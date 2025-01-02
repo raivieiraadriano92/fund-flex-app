@@ -21,9 +21,11 @@ import { PickerButton } from "~/components/ui/picker";
 import { SegmentedControl } from "~/components/ui/segmented-control";
 import { Text } from "~/components/ui/text";
 import { Small } from "~/components/ui/typography";
+import { formatCurrency, getCurrencyByCode } from "~/core/utils/currency";
 import { transactionFormSchema } from "~/core/validations/transaction";
 import { CalendarIcon, TrashIcon } from "~/lib/icons";
 import { useCategoriesStore } from "~/store/categories";
+import { useCurrencyStore } from "~/store/currency";
 import { useGoalsStore } from "~/store/goals";
 import { useTransactionsStore } from "~/store/transactions";
 
@@ -50,6 +52,10 @@ export default function TransactionFormScreen() {
 
   const { createTransaction, deleteTransaction, updateTransaction } =
     useTransactionsStore();
+
+  const currencyCode = useCurrencyStore((state) => state.currency);
+
+  const selectedCurrency = getCurrencyByCode(currencyCode);
 
   const { control, handleSubmit, setValue, watch } =
     useForm<TransactionFormData>({
@@ -177,12 +183,22 @@ export default function TransactionFormScreen() {
                 <CurrencyInput
                   autoFocus
                   className="text-5xl font-bold text-foreground"
+                  precision={selectedCurrency?.decimalPlaces}
                   keyboardType="number-pad"
                   onBlur={onBlur}
                   onChangeValue={(value) => onChange(value ?? 0)}
-                  placeholder="$0,00"
+                  placeholder={formatCurrency(0, currencyCode)}
                   placeholderClassName="text-muted-foreground"
-                  prefix="$"
+                  prefix={
+                    selectedCurrency?.symbolPosition === "prefix"
+                      ? `${selectedCurrency?.symbol}${selectedCurrency?.spaceAfterSymbol ? " " : ""}`
+                      : ""
+                  }
+                  suffix={
+                    selectedCurrency?.symbolPosition === "suffix"
+                      ? `${selectedCurrency?.spaceAfterSymbol ? " " : ""}${selectedCurrency?.symbol}`
+                      : ""
+                  }
                   style={{ lineHeight: 57.6 }}
                   value={value}
                 />

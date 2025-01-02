@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import { Linking, ScrollView, TouchableOpacity, View } from "react-native";
 
 import { SignOutButton } from "~/components/features/auth/sign-out-button";
@@ -13,7 +14,8 @@ import {
   DollarSignIcon,
   HelpCircleIcon,
   FileTextIcon,
-  StarIcon
+  StarIcon,
+  ChevronRightIcon
 } from "~/lib/icons";
 import { useColorScheme } from "~/lib/useColorScheme";
 
@@ -45,7 +47,7 @@ export default function SettingsScreen() {
         {
           label: "Currency",
           icon: DollarSignIcon,
-          onPress: () => {}
+          onPress: () => router.push("settings/currency")
         }
       ]
     },
@@ -107,7 +109,8 @@ export default function SettingsScreen() {
                           <Icon className="text-primary" size={16} />
                         </AvatarFallback>
                       </Avatar>
-                      <P>{item.label}</P>
+                      <P className="flex-1">{item.label}</P>
+                      <ChevronRightIcon className="text-muted-foreground" />
                     </TouchableOpacity>
                   </View>
                 );
