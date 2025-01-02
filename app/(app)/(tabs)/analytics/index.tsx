@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
 
+import { endOfMonth, startOfMonth } from "date-fns";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
+import { CategoryBreakdown } from "~/components/features/analytics/category-breakdown";
 import { MonthlyOverview } from "~/components/features/analytics/monthly-overview";
-import { fetchMonthlyOverview } from "~/core/api/analytics";
+import {
+  fetchCategoryBreakdown,
+  fetchMonthlyOverview
+} from "~/core/api/analytics";
 import { MonthlyData } from "~/core/types/analytics";
 
 export default function AnalyticsScreen() {
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+
+  const [categoryData, setCategoryData] = useState<CategoryBreakdownType[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -16,9 +23,25 @@ export default function AnalyticsScreen() {
       try {
         setIsLoading(true);
 
-        const data = await fetchMonthlyOverview();
+        const sixMonthsAgo = new Date();
 
-        setMonthlyData(data);
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+        const startDate = startOfMonth(sixMonthsAgo);
+
+        const endDate = endOfMonth(new Date());
+
+        const [monthlyOverview, categoryBreakdown] = await Promise.all([
+          fetchMonthlyOverview(startDate, endDate),
+          fetchCategoryBreakdown(startDate, endDate)
+        ]);
+
+        setMonthlyData(monthlyOverview);
+
+        setCategoryData(categoryBreakdown);
+      } catch (error) {
+        console.error(error);
+        // Handle error (maybe show toast)
       } finally {
         setIsLoading(false);
       }
@@ -38,10 +61,11 @@ export default function AnalyticsScreen() {
   return (
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerClassName="p-6"
+      contentContainerClassName="p-6 gap-8"
       showsVerticalScrollIndicator={false}
     >
       <MonthlyOverview data={monthlyData} />
+      <CategoryBreakdown data={categoryData} />
     </ScrollView>
   );
 }

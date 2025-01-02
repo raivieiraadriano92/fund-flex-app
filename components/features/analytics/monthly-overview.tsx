@@ -97,7 +97,7 @@ export function MonthlyOverview({ data }: MonthlyOverviewProps) {
       </View>
 
       {/* Summary */}
-      <View className="gap-4 rounded-lg bg-primary-foreground p-4">
+      <View className="gap-4 rounded-xl bg-primary-foreground p-4">
         {data.map((month, index) => (
           <View className="gap-4" key={month.month}>
             {!!index && <Separator />}
