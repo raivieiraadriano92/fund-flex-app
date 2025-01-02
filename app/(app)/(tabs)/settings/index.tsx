@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { Linking, ScrollView, TouchableOpacity, View } from "react-native";
 
@@ -6,7 +5,6 @@ import { SignOutButton } from "~/components/features/auth/sign-out-button";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Separator } from "~/components/ui/separator";
 import { P } from "~/components/ui/typography";
-import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 import {
   SunIcon,
   MoonIcon,
@@ -20,7 +18,7 @@ import {
 import { useColorScheme } from "~/lib/useColorScheme";
 
 export default function SettingsScreen() {
-  const { isDarkColorScheme, setColorScheme } = useColorScheme();
+  const { isDarkColorScheme } = useColorScheme();
 
   const sections = [
     {
@@ -29,15 +27,7 @@ export default function SettingsScreen() {
         {
           label: "Theme",
           icon: isDarkColorScheme ? MoonIcon : SunIcon,
-          onPress: () => {
-            const newTheme = isDarkColorScheme ? "light" : "dark";
-
-            setColorScheme(newTheme);
-
-            setAndroidNavigationBar(newTheme);
-
-            AsyncStorage.setItem("theme", newTheme);
-          }
+          onPress: () => router.push("settings/theme")
         },
         {
           label: "Language",

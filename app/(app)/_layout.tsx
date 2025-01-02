@@ -64,6 +64,14 @@ export default function AppLayout() {
           title: "💱 Currency Picker"
         }}
       />
+      <Stack.Screen
+        name="settings/theme"
+        options={{
+          presentation: "modal",
+          headerLargeTitle: true,
+          title: "🎨 Theme"
+        }}
+      />
     </Stack>
   );
 }
