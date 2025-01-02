@@ -1,4 +1,12 @@
 import {
+  SunIcon,
+  MoonIcon,
+  GlobeIcon,
+  DollarSignIcon,
+  HelpCircleIcon,
+  FileTextIcon,
+  StarIcon,
+  LogOutIcon,
   SlidersHorizontalIcon,
   CalendarIcon,
   SquareIcon,
@@ -21,6 +29,22 @@ import {
 import { AppleIcon } from "./AppleIcon";
 import { GoogleIcon } from "./GoogleIcon";
 import { iconWithClassName } from "./iconWithClassName";
+
+iconWithClassName(SunIcon);
+
+iconWithClassName(MoonIcon);
+
+iconWithClassName(GlobeIcon);
+
+iconWithClassName(DollarSignIcon);
+
+iconWithClassName(HelpCircleIcon);
+
+iconWithClassName(FileTextIcon);
+
+iconWithClassName(StarIcon);
+
+iconWithClassName(LogOutIcon);
 
 iconWithClassName(SlidersHorizontalIcon);
 
@@ -63,6 +87,14 @@ iconWithClassName(GoogleIcon);
 iconWithClassName(UserIcon);
 
 export {
+  SunIcon,
+  MoonIcon,
+  GlobeIcon,
+  DollarSignIcon,
+  HelpCircleIcon,
+  FileTextIcon,
+  StarIcon,
+  LogOutIcon,
   SlidersHorizontalIcon,
   CalendarIcon,
   SquareIcon,

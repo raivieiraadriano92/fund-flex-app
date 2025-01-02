@@ -44,7 +44,7 @@ export function GoalCard({
   return (
     <TouchableOpacity
       onPress={() => onPress(goal)}
-      className={`h-32 flex-1 justify-center gap-2 rounded-xl bg-white px-3 ${className}`}
+      className={`h-32 flex-1 justify-center gap-2 rounded-xl bg-white px-3 dark:bg-background ${className}`}
       {...props}
     >
       <View className="flex-row justify-between">
