@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, Alert } from "react-native";
 import { toast } from "sonner-native";
 
 import { Button } from "~/components/ui/button";
@@ -19,25 +19,39 @@ export function SignOutButton() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignOut = async () => {
-    try {
-      setIsLoading(true);
+    Alert.alert("Sign Out", "Are you sure?", [
+      {
+        text: "Cancel",
+        style: "cancel"
+      },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            setIsLoading(true);
 
-      await signOut();
+            await signOut();
 
-      useCategoriesStore.getState().reset();
+            useCategoriesStore.getState().reset();
 
-      useGoalsStore.getState().reset();
+            useGoalsStore.getState().reset();
 
-      useTransactionsStore.getState().reset();
+            useTransactionsStore.getState().reset();
 
-      useCurrencyStore.getState().reset();
+            useCurrencyStore.getState().reset();
 
-      AsyncStorage.clear();
-    } catch (_error) {
-      toast.error("An error occurred while signing out. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+            AsyncStorage.clear();
+          } catch (_error) {
+            toast.error(
+              "An error occurred while signing out. Please try again."
+            );
+          } finally {
+            setIsLoading(false);
+          }
+        }
+      }
+    ]);
   };
 
   return (
