@@ -5,18 +5,24 @@ import { ActivityIndicator, ScrollView, View } from "react-native";
 
 import { CategoryBreakdown } from "~/components/features/analytics/category-breakdown";
 import { MonthlyOverview } from "~/components/features/analytics/monthly-overview";
+import { P } from "~/components/ui/typography";
 import {
   fetchCategoryBreakdown,
   fetchMonthlyOverview
 } from "~/core/api/analytics";
-import { MonthlyData } from "~/core/types/analytics";
+import { CategoryBreakdownData, MonthlyData } from "~/core/types/analytics";
+import { useTransactionsStore } from "~/store/transactions";
 
 export default function AnalyticsScreen() {
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
 
-  const [categoryData, setCategoryData] = useState<CategoryBreakdownType[]>([]);
+  const [categoryData, setCategoryData] = useState<CategoryBreakdownData[]>([]);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const hasTransactions = useTransactionsStore(
+    (state) => state.transactions.length > 0
+  );
+
+  const [isLoading, setIsLoading] = useState(hasTransactions);
 
   useEffect(() => {
     async function loadData() {
@@ -47,13 +53,23 @@ export default function AnalyticsScreen() {
       }
     }
 
-    loadData();
-  }, []);
+    if (hasTransactions) {
+      loadData();
+    }
+  }, [hasTransactions]);
 
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (!hasTransactions) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <P>No transactions found</P>
       </View>
     );
   }
