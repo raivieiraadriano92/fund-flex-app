@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { Linking, ScrollView, TouchableOpacity, View } from "react-native";
 
 import { SignOutButton } from "~/components/features/auth/sign-out-button";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
@@ -55,7 +55,7 @@ export default function SettingsScreen() {
         {
           label: "Help & Support",
           icon: HelpCircleIcon,
-          onPress: () => {}
+          onPress: () => Linking.openURL("mailto:raivieiraadriano92@gmail.com")
         },
         {
           label: "Terms and Privacy",
