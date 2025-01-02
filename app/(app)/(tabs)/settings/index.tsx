@@ -1,10 +1,11 @@
+import Constants from "expo-constants";
 import { router } from "expo-router";
 import { Linking, ScrollView, TouchableOpacity, View } from "react-native";
 
 import { SignOutButton } from "~/components/features/auth/sign-out-button";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Separator } from "~/components/ui/separator";
-import { P } from "~/components/ui/typography";
+import { Muted, P } from "~/components/ui/typography";
 import {
   SunIcon,
   MoonIcon,
@@ -109,6 +110,9 @@ export default function SettingsScreen() {
           ))}
         </View>
         <SignOutButton />
+        <Muted className="text-center">
+          Version {Constants.expoConfig?.version}
+        </Muted>
       </View>
     </ScrollView>
   );
