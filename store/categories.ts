@@ -138,7 +138,7 @@ export const useCategoriesStore = create<CategoriesStore>()(
     {
       name: "categories-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ categories: state.categories })
+      partialize: ({ categories }) => ({ categories })
     }
   )
 );

@@ -138,7 +138,7 @@ export const useGoalsStore = create<GoalsStore>()(
     {
       name: "goals-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ goals: state.goals })
+      partialize: ({ goals }) => ({ goals })
     }
   )
 );

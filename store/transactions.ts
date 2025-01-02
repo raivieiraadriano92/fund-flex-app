@@ -151,7 +151,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
     {
       name: "transactions-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ transactions: state.transactions })
+      partialize: ({ transactions }) => ({ transactions })
     }
   )
 );
