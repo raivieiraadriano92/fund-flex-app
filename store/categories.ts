@@ -18,6 +18,7 @@ interface CategoriesActions {
   createDefaultCategories: (categories: CategoryFormData[]) => Promise<void>;
   updateCategory: (id: string, data: CategoryFormData) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
+  reset: () => void;
 }
 
 type CategoriesStore = CategoriesState & CategoriesActions;
@@ -126,6 +127,12 @@ export const useCategoriesStore = create<CategoriesStore>()(
         set((state) => ({
           categories: state.categories.filter((category) => category.id !== id)
         }));
+      },
+
+      reset: () => {
+        set({
+          categories: []
+        });
       }
     }),
     {

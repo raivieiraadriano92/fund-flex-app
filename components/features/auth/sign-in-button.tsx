@@ -23,7 +23,14 @@ export function SignInButton({
     switch (provider) {
       case "apple":
         return {
-          icon: <AppleIcon className="text-white" height={24} width={24} />,
+          className: "bg-black dark:bg-white",
+          icon: (
+            <AppleIcon
+              className="text-white dark:text-black"
+              height={24}
+              width={24}
+            />
+          ),
           label: "Sign in with Apple",
           variant: "solid"
         };
@@ -46,6 +53,7 @@ export function SignInButton({
 
   return (
     <Button
+      className={providerConfig.className}
       variant={providerConfig.variant}
       disabled={isLoading}
       onPress={onPress}

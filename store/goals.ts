@@ -18,6 +18,7 @@ interface GoalsActions {
   createGoal: (data: GoalFormData) => Promise<void>;
   updateGoal: (id: string, data: GoalFormData) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
+  reset: () => void;
 }
 
 type GoalsStore = GoalsState & GoalsActions;
@@ -126,6 +127,12 @@ export const useGoalsStore = create<GoalsStore>()(
         set((state) => ({
           goals: state.goals.filter((goal) => goal.id !== id)
         }));
+      },
+
+      reset: () => {
+        set({
+          goals: []
+        });
       }
     }),
     {

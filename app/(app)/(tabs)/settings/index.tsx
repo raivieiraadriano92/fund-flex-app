@@ -1,10 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 
+import { SignOutButton } from "~/components/features/auth/sign-out-button";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
-import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
-import { Text } from "~/components/ui/text";
 import { P } from "~/components/ui/typography";
 import { setAndroidNavigationBar } from "~/lib/android-navigation-bar";
 import {
@@ -14,16 +13,12 @@ import {
   DollarSignIcon,
   HelpCircleIcon,
   FileTextIcon,
-  StarIcon,
-  LogOutIcon
+  StarIcon
 } from "~/lib/icons";
 import { useColorScheme } from "~/lib/useColorScheme";
-import { useAuthStore } from "~/store/auth";
 
 export default function SettingsScreen() {
   const { isDarkColorScheme, setColorScheme } = useColorScheme();
-
-  const signOut = useAuthStore((state) => state.signOut);
 
   const sections = [
     {
@@ -120,10 +115,7 @@ export default function SettingsScreen() {
             </View>
           ))}
         </View>
-        <Button variant="destructive" onPress={signOut}>
-          <LogOutIcon className="text-white" />
-          <Text>Log out</Text>
-        </Button>
+        <SignOutButton />
       </View>
     </ScrollView>
   );

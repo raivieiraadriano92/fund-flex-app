@@ -1,11 +1,17 @@
+import { useTheme } from "@react-navigation/native";
 import Constants from "expo-constants";
 import { View } from "react-native";
 
 import { SignInButton, Logo } from "~/components/features/auth";
 import { H1, P, Small } from "~/components/ui/typography";
 import { useAuth } from "~/core/hooks/use-auth";
+import { useColorScheme } from "~/lib/useColorScheme";
 
 export default function SignInScreen() {
+  const { isDarkColorScheme } = useColorScheme();
+
+  const theme = useTheme();
+
   const {
     isLoading,
     error,
@@ -36,7 +42,11 @@ export default function SignInScreen() {
   return (
     <View
       className="p-safe flex-1"
-      style={{ backgroundColor: Constants.expoConfig?.splash?.backgroundColor }}
+      style={{
+        backgroundColor: isDarkColorScheme
+          ? theme.colors.background
+          : Constants.expoConfig?.splash?.backgroundColor
+      }}
     >
       <View className="flex-1 justify-center p-6">
         {/* Logo Section */}
