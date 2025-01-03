@@ -17,6 +17,7 @@ import { Toaster } from "sonner-native";
 
 import { AuthProvider } from "~/components/providers/auth-provider";
 import { DataProvider } from "~/components/providers/data-provider";
+import { NetworkProvider } from "~/components/providers/network-provider";
 import { useProtectedRoute } from "~/core/hooks/use-protected-route";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
@@ -106,10 +107,12 @@ export default function RootLayout() {
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
         <StatusBar animated style={isDarkColorScheme ? "light" : "dark"} />
         <AuthProvider>
-          <DataProvider>
-            <AuthProtection />
-            <Toaster closeButton richColors />
-          </DataProvider>
+          <NetworkProvider>
+            <DataProvider>
+              <AuthProtection />
+              <Toaster closeButton richColors />
+            </DataProvider>
+          </NetworkProvider>
         </AuthProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
