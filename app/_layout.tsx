@@ -9,7 +9,9 @@ import {
   Theme,
   ThemeProvider
 } from "@react-navigation/native";
-import { Slot, SplashScreen } from "expo-router";
+import * as Sentry from "@sentry/react-native";
+import { isRunningInExpoGo } from "expo";
+import { Slot, SplashScreen, useNavigationContainerRef } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -31,6 +33,27 @@ export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary
 } from "expo-router";
+
+// Construct a new integration instance. This is needed to communicate between the integration and React
+const navigationIntegration = Sentry.reactNavigationIntegration({
+  enableTimeToInitialDisplay: !isRunningInExpoGo()
+});
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DNS,
+  debug: __DEV__,
+  // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
+  // We recommend adjusting this value in production.
+  tracesSampleRate: 1.0,
+  // profilesSampleRate is relative to tracesSampleRate.
+  // Here, we'll capture profiles for 100% of transactions.
+  profilesSampleRate: 1.0,
+  integrations: [
+    // Pass integration
+    navigationIntegration
+  ],
+  enableNativeFramesTracking: !isRunningInExpoGo() // Tracks slow and frozen frames in the application
+});
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -57,10 +80,19 @@ function AuthProtection() {
   return <Slot />;
 }
 
-export default function RootLayout() {
+function RootLayout() {
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
 
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = useState(false);
+
+  // Capture the NavigationContainer ref and register it with the integration.
+  const ref = useNavigationContainerRef();
+
+  useEffect(() => {
+    if (ref?.current) {
+      navigationIntegration.registerNavigationContainer(ref);
+    }
+  }, [ref]);
 
   useEffect(() => {
     (async () => {
@@ -118,3 +150,6 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+// Wrap the Root Layout route component with `Sentry.wrap` to capture gesture info and profiling data.
+export default Sentry.wrap(RootLayout);
