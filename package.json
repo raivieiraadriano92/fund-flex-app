@@ -5,7 +5,7 @@
   "scripts": {
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "start": "expo start",
+    "start": "expo start --dev-client",
     "prebuild": "expo prebuild",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\" && prettier -c \"**/*.{js,jsx,ts,tsx,json}\"",
     "format": "eslint \"**/*.{js,jsx,ts,tsx}\" --fix && prettier \"**/*.{js,jsx,ts,tsx,json}\" --write",
@@ -61,7 +61,8 @@
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.24.1",
     "zustand": "^4.5.1",
-    "@react-native-community/netinfo": "11.4.1"
+    "@react-native-community/netinfo": "11.4.1",
+    "expo-dev-client": "~5.0.8"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
