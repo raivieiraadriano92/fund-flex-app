@@ -16,6 +16,7 @@ import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
+import { vexo } from "vexo-analytics";
 
 import { AuthProvider } from "~/components/providers/auth-provider";
 import { DataProvider } from "~/components/providers/data-provider";
@@ -39,9 +40,26 @@ const navigationIntegration = Sentry.reactNavigationIntegration({
   enableTimeToInitialDisplay: !isRunningInExpoGo()
 });
 
+const vexoApiKey = process.env.EXPO_PUBLIC_VEXO_API_KEY;
+
+const sentryDns = process.env.EXPO_PUBLIC_SENTRY_DNS;
+
+if (!vexoApiKey) {
+  throw new Error("Missing env var: EXPO_PUBLIC_VEXO_API_KEY");
+}
+
+if (!vexoApiKey) {
+  throw new Error("Missing env var: EXPO_PUBLIC_SENTRY_DNS");
+}
+
+if (!__DEV__) {
+  vexo(vexoApiKey);
+}
+
 Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DNS,
-  debug: __DEV__,
+  enabled: !__DEV__,
+  dsn: sentryDns,
+  debug: false, //__DEV__,
   // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
   // We recommend adjusting this value in production.
   tracesSampleRate: 1.0,
