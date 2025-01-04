@@ -58,7 +58,7 @@ export default function SignInScreen() {
           <P className="text-center">
             Take control of your financial future with our all-in-one finance
             management app. Designed to simplify and streamline your money
-            matters
+            matters.
           </P>
         </View>
 

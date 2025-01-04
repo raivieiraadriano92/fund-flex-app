@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity, View } from "react-native";
 
 import type { Category, CategoryType } from "~/core/types/category";
@@ -9,7 +9,7 @@ import { CategoryList } from "~/components/features/categories/category-list";
 import { Button } from "~/components/ui/button";
 import { SegmentedControl } from "~/components/ui/segmented-control";
 import { Text } from "~/components/ui/text";
-import { Muted, P } from "~/components/ui/typography";
+import { H1, Muted, P } from "~/components/ui/typography";
 import { ChevronRightIcon, LayoutGridIcon, PlusIcon } from "~/lib/icons";
 import { useCategoriesStore } from "~/store/categories";
 
@@ -35,50 +35,68 @@ export default function CategoriesScreen() {
     router.push("/(app)/categories/new");
   };
 
+  if (!hasCategories) {
+    return (
+      <>
+        <Stack.Screen
+          options={{
+            headerShown: false
+          }}
+        />
+        <View className="flex-1 justify-center gap-16 p-6">
+          <H1>Let's get started with your categories:</H1>
+          <View className="gap-3">
+            <TouchableOpacity
+              className="flex-row items-center gap-3 rounded-xl border border-border p-3"
+              onPress={() => router.push("/categories/quick-start")}
+            >
+              <View className="h-12 w-12 items-center justify-center rounded-lg bg-primary-foreground">
+                <LayoutGridIcon className="text-primary" />
+              </View>
+              <View className="flex-1">
+                <P className="font-semibold">Quick Start!</P>
+                <Muted>
+                  We've prepared a set of common categories to help you get
+                  started quickly.
+                </Muted>
+              </View>
+              <ChevronRightIcon className="rounded-full bg-primary-foreground text-primary" />
+            </TouchableOpacity>
+            <Muted className="text-center">or</Muted>
+            <Button onPress={() => router.push("/categories/new")}>
+              <Text>Add your first category</Text>
+            </Button>
+          </View>
+        </View>
+      </>
+    );
+  }
+
   return (
     <>
+      <Stack.Screen
+        options={{
+          headerLargeTitle: true,
+          headerShown: true,
+          title: "📋 Categories"
+        }}
+      />
       <CategoryList
         categories={filteredCategories}
         flashListProps={{
           ListHeaderComponent: (
             <View className="mb-6">
-              {hasCategories ? (
-                <SegmentedControl
-                  values={["Expense", "Income"]}
-                  selectedIndex={selectedType === "expense" ? 0 : 1}
-                  onChange={(event) => {
-                    setSelectedType(
-                      event.nativeEvent.selectedSegmentIndex === 0
-                        ? "expense"
-                        : "income"
-                    );
-                  }}
-                />
-              ) : (
-                <View className="gap-6">
-                  <P>Get Started with Categories:</P>
-                  <TouchableOpacity
-                    className="flex-row items-center gap-3 rounded-xl border border-border p-3"
-                    onPress={() => router.push("/categories/quick-start")}
-                  >
-                    <View className="h-12 w-12 items-center justify-center rounded-lg bg-primary-foreground">
-                      <LayoutGridIcon className="text-primary" />
-                    </View>
-                    <View className="flex-1">
-                      <P className="font-semibold">Quick Start!</P>
-                      <Muted>
-                        We've prepared a set of common categories to help you
-                        get started quickly.
-                      </Muted>
-                    </View>
-                    <ChevronRightIcon className="rounded-full bg-primary-foreground text-primary" />
-                  </TouchableOpacity>
-                  <Muted className="text-center">or</Muted>
-                  <Button onPress={() => router.push("/categories/new")}>
-                    <Text>Add your first category</Text>
-                  </Button>
-                </View>
-              )}
+              <SegmentedControl
+                values={["Expense", "Income"]}
+                selectedIndex={selectedType === "expense" ? 0 : 1}
+                onChange={(event) => {
+                  setSelectedType(
+                    event.nativeEvent.selectedSegmentIndex === 0
+                      ? "expense"
+                      : "income"
+                  );
+                }}
+              />
             </View>
           )
         }}
