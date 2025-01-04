@@ -1,6 +1,6 @@
 import { useTheme } from "@react-navigation/native";
 import Constants from "expo-constants";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { toast } from "sonner-native";
 
 import { SignInButton, Logo } from "~/components/features/auth";
@@ -64,21 +64,27 @@ export default function SignInScreen() {
 
         {/* Auth Buttons Section */}
         <View className="gap-y-3">
-          <SignInButton
-            provider="apple"
-            onPress={() => handleSignIn("apple")}
-            isLoading={isLoading.apple}
-          />
-          <SignInButton
-            provider="google"
-            onPress={() => handleSignIn("google")}
-            isLoading={isLoading.google}
-          />
-          <SignInButton
-            provider="anonymous"
-            onPress={() => handleSignIn("anonymous")}
-            isLoading={isLoading.anonymous}
-          />
+          {Platform.OS === "ios" && (
+            <SignInButton
+              provider="apple"
+              onPress={() => handleSignIn("apple")}
+              isLoading={isLoading.apple}
+            />
+          )}
+          {Platform.OS === "android" && (
+            <SignInButton
+              provider="google"
+              onPress={() => handleSignIn("google")}
+              isLoading={isLoading.google}
+            />
+          )}
+          {__DEV__ && (
+            <SignInButton
+              provider="anonymous"
+              onPress={() => handleSignIn("anonymous")}
+              isLoading={isLoading.anonymous}
+            />
+          )}
         </View>
       </View>
     </View>

@@ -37,9 +37,10 @@ export function SignInButton({
 
       case "google":
         return {
+          className: "bg-black dark:bg-white",
           icon: <GoogleIcon className="text-white" height={24} width={24} />,
           label: "Sign in with Google",
-          variant: "outline"
+          variant: "solid"
         };
 
       case "anonymous":

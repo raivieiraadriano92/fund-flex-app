@@ -37,6 +37,7 @@ export default {
     plugins: [
       "expo-router",
       "expo-apple-authentication",
+      "@react-native-google-signin/google-signin",
       [
         "@sentry/react-native/expo",
         {

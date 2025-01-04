@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import {
+  GoogleSignin
+  // statusCodes
+} from "@react-native-google-signin/google-signin";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { Platform } from "react-native";
 
 import { supabase } from "~/core/api/supabase";
 
@@ -54,20 +59,39 @@ export function useAuth({ onError }: { onError: (e: unknown) => void }) {
   };
 
   const signInWithGoogle = async () => {
-    throw new Error("Not implemented");
+    try {
+      setIsLoading((prev) => ({ ...prev, google: true }));
 
-    // try {
-    //   setIsLoading((prev) => ({ ...prev, google: true }));
+      await GoogleSignin.hasPlayServices();
 
-    //   // @todo implement Google sign-in
-    //   // const { error } = await supabase.auth.signInAnonymously();
+      const userInfo = await GoogleSignin.signIn();
 
-    //   // if (error) throw error;
-    // } catch (err) {
-    //   setError(err.message);
-    // } finally {
-    //   setIsLoading((prev) => ({ ...prev, google: false }));
-    // }
+      if (userInfo.data?.idToken) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: userInfo.data.idToken
+        });
+
+        console.log(error, data);
+      } else {
+        throw new Error("no ID token present!");
+      }
+    } catch (e) {
+      console.error(e);
+      // if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+      //   // user cancelled the login flow
+      // } else if (error.code === statusCodes.IN_PROGRESS) {
+      //   // operation (e.g. sign in) is in progress already
+      // } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+      //   // play services not available or outdated
+      // } else {
+      //   // some other error happened
+      // }
+
+      onError(e);
+    } finally {
+      setIsLoading((prev) => ({ ...prev, google: false }));
+    }
   };
 
   const signInAnonymously = async () => {
@@ -83,6 +107,15 @@ export function useAuth({ onError }: { onError: (e: unknown) => void }) {
       setIsLoading((prev) => ({ ...prev, anonymous: false }));
     }
   };
+
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      GoogleSignin.configure({
+        scopes: ["https://www.googleapis.com/auth/drive.readonly"]
+        // webClientId: "YOUR CLIENT ID FROM GOOGLE CONSOLE"
+      });
+    }
+  }, []);
 
   return {
     isLoading,
