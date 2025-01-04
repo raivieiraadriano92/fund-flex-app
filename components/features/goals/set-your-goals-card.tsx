@@ -3,12 +3,15 @@ import { TouchableOpacity, View } from "react-native";
 
 import { Muted, P } from "~/components/ui/typography";
 import { CirclePlusIcon, TargetIcon } from "~/lib/icons";
+import { useGoalsStore } from "~/store/goals";
 
 export function SetYourGoalsCard() {
+  const goalsLength = useGoalsStore((state) => state.goals.length);
+
   return (
     <TouchableOpacity
       className="flex-row items-center gap-3 rounded-xl border border-border p-3"
-      onPress={() => router.push("/goals/new")}
+      onPress={() => router.push(goalsLength ? "/goals/new" : "/goals")}
     >
       <View className="h-12 w-12 items-center justify-center rounded-lg bg-primary-foreground">
         <TargetIcon className="text-primary" />

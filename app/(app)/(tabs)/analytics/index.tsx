@@ -69,7 +69,7 @@ export default function AnalyticsScreen() {
   if (!hasTransactions) {
     return (
       <View className="flex-1 items-center justify-center">
-        <P>No transactions found</P>
+        <P>No transactions found!</P>
       </View>
     );
   }
