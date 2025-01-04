@@ -36,6 +36,7 @@ export default {
     },
     plugins: [
       "expo-router",
+      "expo-apple-authentication",
       [
         "@sentry/react-native/expo",
         {
@@ -64,7 +65,8 @@ export default {
     assetBundlePatterns: ["**/*"],
     ios: {
       supportsTablet: true,
-      bundleIdentifier
+      bundleIdentifier,
+      usesAppleSignIn: true
     },
     android: {
       adaptiveIcon: {

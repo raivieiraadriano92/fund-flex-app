@@ -1,9 +1,10 @@
 import { useTheme } from "@react-navigation/native";
 import Constants from "expo-constants";
 import { View } from "react-native";
+import { toast } from "sonner-native";
 
 import { SignInButton, Logo } from "~/components/features/auth";
-import { H1, P, Small } from "~/components/ui/typography";
+import { H1, P } from "~/components/ui/typography";
 import { useAuth } from "~/core/hooks/use-auth";
 import { useColorScheme } from "~/lib/useColorScheme";
 
@@ -12,13 +13,10 @@ export default function SignInScreen() {
 
   const theme = useTheme();
 
-  const {
-    isLoading,
-    error,
-    signInWithApple,
-    signInWithGoogle,
-    signInAnonymously
-  } = useAuth();
+  const { isLoading, signInWithApple, signInWithGoogle, signInAnonymously } =
+    useAuth({
+      onError: () => toast.error("An error occurred. Please try again later.")
+    });
 
   const handleSignIn = async (provider: "apple" | "google" | "anonymous") => {
     switch (provider) {
@@ -63,13 +61,6 @@ export default function SignInScreen() {
             matters
           </P>
         </View>
-
-        {/* Error Message */}
-        {error && (
-          <View className="rounded-lg bg-red-50 px-4 py-3">
-            <Small className="text-center text-red-600">{error}</Small>
-          </View>
-        )}
 
         {/* Auth Buttons Section */}
         <View className="gap-y-3">
