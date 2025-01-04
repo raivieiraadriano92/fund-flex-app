@@ -1,11 +1,13 @@
 // components/providers/auth-provider.tsx
 import { useEffect } from "react";
 
+import { identifyDevice } from "vexo-analytics";
+
 import { supabase } from "~/core/api/supabase";
 import { useAuthStore } from "~/store/auth";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const setSession = useAuthStore((state) => state.setSession);
+  const { session, setSession } = useAuthStore();
 
   useEffect(() => {
     // Get initial session
@@ -22,6 +24,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, [setSession]);
+
+  useEffect(() => {
+    identifyDevice(session?.user.id || null);
+  }, [session?.user.id]);
 
   return children;
 }
