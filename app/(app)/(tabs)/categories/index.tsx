@@ -102,15 +102,13 @@ export default function CategoriesScreen() {
         }}
         onPressCategory={handleCategoryPress}
       />
-      {hasCategories && (
-        <Button
-          className="native:w-14 absolute bottom-4 right-4 w-11 rounded-full p-0"
-          onPress={handleCreateCategory}
-          size="lg"
-        >
-          <PlusIcon className="text-white" />
-        </Button>
-      )}
+      <Button
+        className="native:w-14 absolute bottom-4 right-4 w-11 rounded-full p-0"
+        onPress={handleCreateCategory}
+        size="lg"
+      >
+        <PlusIcon className="text-white" />
+      </Button>
     </>
   );
 }

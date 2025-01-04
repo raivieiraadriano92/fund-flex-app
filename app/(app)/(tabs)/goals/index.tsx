@@ -1,12 +1,12 @@
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { View } from "react-native";
 
 import type { Goal } from "~/core/types/goal";
 
 import { GoalList } from "~/components/features/goals/goal-list";
-import { SetYourGoalsCard } from "~/components/features/goals/set-your-goals-card";
 import { Button } from "~/components/ui/button";
-import { P } from "~/components/ui/typography";
+import { Text } from "~/components/ui/text";
+import { H1 } from "~/components/ui/typography";
 import { PlusIcon } from "~/lib/icons";
 import { useGoalsStore } from "~/store/goals";
 
@@ -25,32 +25,41 @@ export default function GoalsScreen() {
     router.push("/(app)/goals/new");
   };
 
+  if (!hasGoals) {
+    return (
+      <>
+        <Stack.Screen
+          options={{
+            headerShown: false
+          }}
+        />
+        <View className="flex-1 justify-center gap-16 bg-background p-6">
+          <H1>What goals do you want to achieve?</H1>
+          <Button onPress={() => router.push("/goals/new")}>
+            <Text>Add your first goal</Text>
+          </Button>
+        </View>
+      </>
+    );
+  }
+
   return (
     <>
-      <GoalList
-        flashListProps={{
-          ListEmptyComponent: (
-            <View className="gap-6">
-              <P>
-                Start tracking your financial goals and watch your progress
-                grow.
-              </P>
-              <SetYourGoalsCard />
-            </View>
-          )
+      <Stack.Screen
+        options={{
+          headerLargeTitle: true,
+          headerShown: true,
+          title: "🎯 Goals"
         }}
-        goals={goals}
-        onPressGoal={handleGoalPress}
       />
-      {hasGoals && (
-        <Button
-          className="native:w-14 absolute bottom-4 right-4 w-11 rounded-full p-0"
-          onPress={handleCreateGoal}
-          size="lg"
-        >
-          <PlusIcon className="text-white" />
-        </Button>
-      )}
+      <GoalList goals={goals} onPressGoal={handleGoalPress} />
+      <Button
+        className="native:w-14 absolute bottom-4 right-4 w-11 rounded-full p-0"
+        onPress={handleCreateGoal}
+        size="lg"
+      >
+        <PlusIcon className="text-white" />
+      </Button>
     </>
   );
 }
