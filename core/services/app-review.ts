@@ -1,5 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 import * as StoreReview from "expo-store-review";
+import { Linking, Platform } from "react-native";
 
 import { useTransactionsStore } from "~/store/transactions";
 
@@ -48,5 +50,28 @@ export async function promptForReview() {
     await AsyncStorage.setItem(REVIEW_KEY, Date.now().toString());
   } catch (error) {
     console.error("Error requesting review:", error);
+  }
+}
+
+export async function redirectToWriteReview() {
+  const os = Platform.OS;
+
+  switch (os) {
+    case "ios":
+      Linking.openURL(
+        "itms-apps://itunes.apple.com/app/viewContentsUserReviews/id6740143675?action=write-review"
+      );
+
+      break;
+
+    case "android":
+      Linking.openURL(
+        `market://details?id=${Constants.expoConfig?.android?.package}&showAllReviews=true`
+      );
+
+      break;
+
+    default:
+      break;
   }
 }
