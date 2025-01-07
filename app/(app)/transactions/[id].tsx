@@ -21,6 +21,10 @@ import { PickerButton } from "~/components/ui/picker";
 import { SegmentedControl } from "~/components/ui/segmented-control";
 import { Text } from "~/components/ui/text";
 import { Small } from "~/components/ui/typography";
+import {
+  promptForReview,
+  shouldPromptForReview
+} from "~/core/services/app-review";
 import { formatCurrency, getCurrencyByCode } from "~/core/utils/currency";
 import { transactionFormSchema } from "~/core/validations/transaction";
 import { CalendarIcon, TrashIcon } from "~/lib/icons";
@@ -74,6 +78,13 @@ export default function TransactionFormScreen() {
         await updateTransaction(id, data);
       } else {
         await createTransaction(data);
+
+        // Check and prompt for review after successful creation
+        const shouldPrompt = await shouldPromptForReview();
+
+        if (shouldPrompt) {
+          await promptForReview();
+        }
       }
 
       router.back();

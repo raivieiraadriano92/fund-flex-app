@@ -67,7 +67,8 @@
     "tailwindcss-animate": "^1.0.7",
     "vexo-analytics": "^1.4.4",
     "zod": "^3.24.1",
-    "zustand": "^4.5.1"
+    "zustand": "^4.5.1",
+    "expo-store-review": "~8.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
