@@ -2,6 +2,7 @@ import Constants from "expo-constants";
 import { router } from "expo-router";
 import { Linking, ScrollView, TouchableOpacity, View } from "react-native";
 
+import { DeleteAccountButton } from "~/components/features/auth/delete-account-button";
 import { SignOutButton } from "~/components/features/auth/sign-out-button";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Separator } from "~/components/ui/separator";
@@ -110,6 +111,7 @@ export default function SettingsScreen() {
           ))}
         </View>
         <SignOutButton />
+        <DeleteAccountButton />
         <Muted className="text-center">
           Version {Constants.expoConfig?.version}
         </Muted>

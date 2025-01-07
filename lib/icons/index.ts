@@ -1,4 +1,5 @@
 import {
+  CircleAlertIcon,
   WifiOffIcon,
   SunIcon,
   MoonIcon,
@@ -30,6 +31,8 @@ import {
 import { AppleIcon } from "./AppleIcon";
 import { GoogleIcon } from "./GoogleIcon";
 import { iconWithClassName } from "./iconWithClassName";
+
+iconWithClassName(CircleAlertIcon);
 
 iconWithClassName(WifiOffIcon);
 
@@ -90,6 +93,7 @@ iconWithClassName(GoogleIcon);
 iconWithClassName(UserIcon);
 
 export {
+  CircleAlertIcon,
   WifiOffIcon,
   SunIcon,
   MoonIcon,

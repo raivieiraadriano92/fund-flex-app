@@ -7,4 +7,5 @@ export type AuthState = {
 export type AuthStore = AuthState & {
   setSession: (session: Session | null) => void;
   signOut: () => Promise<void>;
+  markAccountToBeDeleted: () => Promise<void>;
 };

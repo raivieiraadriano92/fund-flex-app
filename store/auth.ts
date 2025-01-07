@@ -8,7 +8,7 @@ import { supabase } from "~/core/api/supabase";
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       session: undefined,
 
       setSession: (session) => set({ session }),
@@ -19,6 +19,19 @@ export const useAuthStore = create<AuthStore>()(
         if (error) throw error;
 
         set({ session: null });
+      },
+
+      markAccountToBeDeleted: async () => {
+        const userId = get().session?.user?.id;
+
+        if (!userId) throw new Error("User not found");
+
+        const { error } = await supabase
+          .from("profiles")
+          .update({ marked_to_delete: true })
+          .eq("id", userId);
+
+        if (error) throw error;
       }
     }),
     {
