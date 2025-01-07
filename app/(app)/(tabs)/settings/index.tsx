@@ -7,6 +7,7 @@ import { SignOutButton } from "~/components/features/auth/sign-out-button";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Separator } from "~/components/ui/separator";
 import { Muted, P } from "~/components/ui/typography";
+import { promptForReview } from "~/core/services/app-review";
 import {
   GlobeLockIcon,
   SunIcon,
@@ -76,7 +77,7 @@ export default function SettingsScreen() {
         {
           label: "Rate this App",
           icon: StarIcon,
-          onPress: () => {}
+          onPress: () => promptForReview()
         }
       ]
     }
