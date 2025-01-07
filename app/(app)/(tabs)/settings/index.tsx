@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Separator } from "~/components/ui/separator";
 import { Muted, P } from "~/components/ui/typography";
 import {
+  GlobeLockIcon,
   SunIcon,
   MoonIcon,
   GlobeIcon,
@@ -52,9 +53,20 @@ export default function SettingsScreen() {
           onPress: () => Linking.openURL("mailto:raivieiraadriano92@gmail.com")
         },
         {
-          label: "Terms and Privacy",
+          label: "Terms & Conditions",
           icon: FileTextIcon,
-          onPress: () => {}
+          onPress: () =>
+            Linking.openURL(
+              "https://fund-flex-app.vercel.app/terms-conditions.html"
+            )
+        },
+        {
+          label: "Privacy Policy",
+          icon: GlobeLockIcon,
+          onPress: () =>
+            Linking.openURL(
+              "https://fund-flex-app.vercel.app/privacy-policy.html"
+            )
         }
       ]
     },
