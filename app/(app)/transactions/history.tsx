@@ -163,7 +163,7 @@ export default function TransactionsHistoryScreen() {
             onChangeText: (event) =>
               handleChangeSearchQuery(event.nativeEvent.text)
           },
-          title: "History"
+          title: "📝 History"
         }}
       />
       <TransactionList
