@@ -1,6 +1,51 @@
+import { useEffect } from "react";
+
+import * as QuickActions from "expo-quick-actions";
+import { useQuickActionRouting, RouterAction } from "expo-quick-actions/router";
 import { Stack } from "expo-router";
+import { Platform } from "react-native";
 
 export default function AppLayout() {
+  useQuickActionRouting();
+
+  useEffect(() => {
+    QuickActions.setItems<RouterAction>([
+      {
+        title: "Wait! Don't delete me!",
+        subtitle: "We're here to help",
+        icon:
+          Platform.OS === "ios"
+            ? "symbol:person.crop.circle.badge.questionmark"
+            : undefined,
+        id: "help",
+        params: {
+          href: "/settings"
+        }
+      },
+      {
+        title: "💰 New Transaction",
+        id: "new-transaction",
+        params: {
+          href: "/transactions/new"
+        }
+      },
+      {
+        title: "📋 New Category",
+        id: "new-category",
+        params: {
+          href: "/categories/new"
+        }
+      },
+      {
+        title: "🎯 New Goal",
+        id: "new-goal",
+        params: {
+          href: "/goals/new"
+        }
+      }
+    ]);
+  }, []);
+
   return (
     <Stack>
       <Stack.Screen
