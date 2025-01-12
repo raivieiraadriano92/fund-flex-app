@@ -9,6 +9,12 @@ import { Platform } from "react-native";
 
 import { supabase } from "~/core/api/supabase";
 
+const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+
+if (!webClientId) {
+  throw new Error("Missing env var: EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID");
+}
+
 export function useAuth({ onError }: { onError: (e: unknown) => void }) {
   const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>({
     apple: false,
@@ -29,19 +35,12 @@ export function useAuth({ onError }: { onError: (e: unknown) => void }) {
 
       // Sign in via Supabase Auth.
       if (credential.identityToken) {
-        const {
-          error,
-          data: { user }
-        } = await supabase.auth.signInWithIdToken({
+        const { error } = await supabase.auth.signInWithIdToken({
           provider: "apple",
           token: credential.identityToken
         });
 
-        console.log(JSON.stringify({ error, user }, null, 2));
-
-        if (!error) {
-          // User is signed in.
-        }
+        if (error) throw error;
       } else {
         throw new Error("No identityToken.");
       }
@@ -67,17 +66,16 @@ export function useAuth({ onError }: { onError: (e: unknown) => void }) {
       const userInfo = await GoogleSignin.signIn();
 
       if (userInfo.data?.idToken) {
-        const { data, error } = await supabase.auth.signInWithIdToken({
+        const { error } = await supabase.auth.signInWithIdToken({
           provider: "google",
           token: userInfo.data.idToken
         });
 
-        console.log(error, data);
+        if (error) throw error;
       } else {
         throw new Error("no ID token present!");
       }
     } catch (e) {
-      console.error(e);
       // if (error.code === statusCodes.SIGN_IN_CANCELLED) {
       //   // user cancelled the login flow
       // } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -96,6 +94,10 @@ export function useAuth({ onError }: { onError: (e: unknown) => void }) {
 
   const signInAnonymously = async () => {
     try {
+      if (!__DEV__) {
+        throw new Error("Anonymous sign-in is only available in development.");
+      }
+
       setIsLoading((prev) => ({ ...prev, anonymous: true }));
 
       const { error } = await supabase.auth.signInAnonymously();
@@ -111,8 +113,8 @@ export function useAuth({ onError }: { onError: (e: unknown) => void }) {
   useEffect(() => {
     if (Platform.OS === "android") {
       GoogleSignin.configure({
-        scopes: ["https://www.googleapis.com/auth/drive.readonly"]
-        // webClientId: "YOUR CLIENT ID FROM GOOGLE CONSOLE"
+        scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+        webClientId
       });
     }
   }, []);

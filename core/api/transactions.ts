@@ -51,8 +51,8 @@ export const fetchFilteredTransactions = async ({
     const { data } = await query;
 
     return (data ?? []) as Transaction[];
-  } catch (error) {
-    console.error("Error fetching transactions", error);
+  } catch (_error) {
+    // Handle error (maybe show toast)
 
     return [];
   }

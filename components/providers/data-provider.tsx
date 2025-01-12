@@ -30,8 +30,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             fetchLatestTransactions()
           ]);
         }
-      } catch (error) {
-        console.error("Error loading initial data:", error);
+      } catch (_error) {
+        // Handle error (maybe show toast)
       } finally {
         setIsLoading(false);
 

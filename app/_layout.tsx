@@ -140,9 +140,7 @@ function RootLayout() {
         }
 
         setIsColorSchemeLoaded(true);
-      } catch (e) {
-        console.error("Error loading theme:", e);
-
+      } catch (_e) {
         setIsColorSchemeLoaded(true);
       }
     })();

@@ -48,8 +48,8 @@ export async function promptForReview() {
     await StoreReview.requestReview();
 
     await AsyncStorage.setItem(REVIEW_KEY, Date.now().toString());
-  } catch (error) {
-    console.error("Error requesting review:", error);
+  } catch (_error) {
+    // Handle error (maybe show toast)
   }
 }
 

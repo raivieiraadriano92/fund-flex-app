@@ -45,8 +45,7 @@ export default function AnalyticsScreen() {
         setMonthlyData(monthlyOverview);
 
         setCategoryData(categoryBreakdown);
-      } catch (error) {
-        console.error(error);
+      } catch (_error) {
         // Handle error (maybe show toast)
       } finally {
         setIsLoading(false);
