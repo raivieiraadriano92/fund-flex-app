@@ -157,7 +157,6 @@ export default function TransactionsHistoryScreen() {
     <>
       <Stack.Screen
         options={{
-          headerBackTitle: "Main",
           headerLargeTitle: true,
           headerSearchBarOptions: {
             onChangeText: (event) =>

@@ -44,7 +44,7 @@ export default function GoalPickerScreen() {
         isSelected={(goal) => goal.id === selectedGoalId}
         onPressGoal={(goal) => setSelectedGoalId(goal.id)}
       />
-      <View className="pb-safe bg-white p-6">
+      <View className="pb-safe p-6">
         <Button
           className="mb-6"
           disabled={!selectedGoalId}

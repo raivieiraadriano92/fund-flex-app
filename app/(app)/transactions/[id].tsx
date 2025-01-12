@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { HeaderButton } from "@react-navigation/elements";
 import { format, parseISO } from "date-fns";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
@@ -27,7 +26,7 @@ import {
 } from "~/core/services/app-review";
 import { formatCurrency, getCurrencyByCode } from "~/core/utils/currency";
 import { transactionFormSchema } from "~/core/validations/transaction";
-import { CalendarIcon, TrashIcon } from "~/lib/icons";
+import { CalendarIcon } from "~/lib/icons";
 import { useCategoriesStore } from "~/store/categories";
 import { useCurrencyStore } from "~/store/currency";
 import { useGoalsStore } from "~/store/goals";
@@ -135,20 +134,6 @@ export default function TransactionFormScreen() {
     <>
       <Stack.Screen
         options={{
-          headerRight: () =>
-            isEditing && (
-              <HeaderButton
-                accessibilityLabel="Delete category"
-                disabled={isDeleting}
-                onPress={handleDelete}
-              >
-                {isDeleting ? (
-                  <ActivityIndicator className="text-destructive" />
-                ) : (
-                  <TrashIcon className="text-destructive" />
-                )}
-              </HeaderButton>
-            ),
           headerTitle: transaction ? transaction?.title : "💰 New Transaction"
         }}
       />
@@ -314,6 +299,19 @@ export default function TransactionFormScreen() {
             <Text>{isEditing ? "Update" : "Create"} Transaction</Text>
             {isLoading && <ActivityIndicator color="white" />}
           </Button>
+
+          {isEditing && (
+            <Button
+              disabled={isDeleting}
+              onPress={handleDelete}
+              variant="ghost"
+            >
+              <Text className="text-destructive group-active:text-destructive">
+                Delete
+              </Text>
+              {isDeleting && <ActivityIndicator className="text-destructive" />}
+            </Button>
+          )}
         </View>
       </ScrollView>
     </>

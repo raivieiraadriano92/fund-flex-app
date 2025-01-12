@@ -79,7 +79,7 @@ export default function HomeScreen() {
         options={{
           headerLargeTitle: true,
           headerShown: true,
-          title: "FundFlex"
+          title: "💰 Overview"
         }}
       />
       <TransactionList

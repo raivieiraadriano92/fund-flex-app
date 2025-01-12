@@ -20,7 +20,6 @@
     "@react-native-community/netinfo": "11.4.1",
     "@react-native-google-signin/google-signin": "^13.1.0",
     "@react-native-segmented-control/segmented-control": "2.5.4",
-    "@react-navigation/elements": "^2.2.5",
     "@react-navigation/native": "^7.0.0",
     "@rn-primitives/avatar": "^1.1.0",
     "@rn-primitives/label": "^1.1.0",

@@ -48,7 +48,7 @@ export function GoalCard({
       {...props}
     >
       <View className="flex-row justify-between">
-        <View>
+        <View className="flex-1">
           {/* Header with emoji and title */}
           <P
             className="font-medium"
