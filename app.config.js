@@ -24,6 +24,7 @@ const { bundleIdentifier, name } = getAppInfo();
 
 export default {
   expo: {
+    owner: "raivieiraadriano92",
     newArchEnabled: true,
     name,
     slug: "fund-flex-app",
