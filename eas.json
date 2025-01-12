@@ -29,7 +29,6 @@
   "submit": {
     "production": {
       "android": {
-        "serviceAccountKeyPath": "./fund-flex-app-25de8e4d3e7e.json",
         "track": "production"
       }
     }
