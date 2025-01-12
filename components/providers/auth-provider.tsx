@@ -1,6 +1,7 @@
 // components/providers/auth-provider.tsx
 import { useEffect } from "react";
 
+import * as Sentry from "@sentry/react-native";
 import { identifyDevice } from "vexo-analytics";
 
 import { supabase } from "~/core/api/supabase";
@@ -27,6 +28,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     identifyDevice(session?.user.id || null);
+
+    Sentry.setUser(
+      session?.user.id
+        ? {
+            id: session?.user.id
+          }
+        : null
+    );
   }, [session?.user.id]);
 
   return children;
