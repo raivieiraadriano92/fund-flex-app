@@ -78,30 +78,13 @@ export const useGoalsStore = create<GoalsStore>()(
           .update(data)
           .eq("id", id)
           .eq("user_id", userId)
-          .select(
-            `
-            *,
-            income_amount: transactions(amount).eq(type, 'income'),
-            expense_amount: transactions(amount).eq(type, 'expense')
-          `
-          )
+          .select("*, transactions(amount,type)")
           .single();
 
         if (error) throw error;
 
         if (updatedGoal) {
-          const goalWithProgress = {
-            // @todo Fix this typing issue -> ParserError<"Unexpected input ...
-            // @ts-ignore
-            ...updatedGoal,
-            current_amount:
-              // @todo Fix this typing issue -> ParserError<"Unexpected input ...
-              // @ts-ignore
-              (updatedGoal.income_amount?.sum?.amount ?? 0) -
-              // @todo Fix this typing issue -> ParserError<"Unexpected input ...
-              // @ts-ignore
-              (updatedGoal.expense_amount?.sum?.amount ?? 0)
-          };
+          const goalWithProgress = mapGoal(updatedGoal);
 
           set((state) => ({
             goals: state.goals
