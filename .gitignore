@@ -25,3 +25,4 @@ android
 .metro-health-check*
 
 build-*.tar.gz
+build-*.apk

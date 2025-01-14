@@ -174,6 +174,8 @@ export type Database = {
       calculate_balance: {
         Args: {
           user_id_param: string;
+          start_date?: string;
+          end_date?: string;
         };
         Returns: number;
       };

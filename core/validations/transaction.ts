@@ -20,7 +20,7 @@ export const transactionFormSchema = z.object({
   category_id: z.string({
     required_error: "Category is required"
   }),
-  goal_id: z.string().optional(),
+  goal_id: z.string().nullable().optional(),
   isRecurring: z.boolean().default(false),
   recurring: z
     .object({

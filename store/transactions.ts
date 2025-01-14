@@ -16,9 +16,14 @@ interface TransactionsState {
   totalBalance: number;
 }
 
+interface DateFilter {
+  startDate: Date;
+  endDate: Date;
+}
+
 interface TransactionsActions {
-  fetchLatestTransactions: () => Promise<void>;
-  fetchTotalBalance: () => Promise<void>;
+  fetchLatestTransactions: (dateFilter?: DateFilter) => Promise<void>;
+  fetchTotalBalance: (dateFilter?: DateFilter) => Promise<void>;
   createTransaction: (data: TransactionFormData[]) => Promise<void>;
   updateTransaction: (id: string, data: TransactionFormData) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
@@ -35,33 +40,46 @@ export const useTransactionsStore = create<TransactionsStore>()(
       transactions: [],
       totalBalance: 0,
 
-      fetchLatestTransactions: async () => {
+      fetchLatestTransactions: async (dateFilter) => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
 
-        const { data } = await supabase
+        let query = supabase
           .from("transactions")
           .select("*")
           .eq("user_id", userId)
-          .order("datetime", { ascending: false })
-          .range(0, LIMIT - 1);
+          .order("datetime", { ascending: false });
 
-        set({
-          transactions: data ?? []
-        });
+        // Add date filtering if provided
+        if (dateFilter) {
+          query = query
+            .gte("datetime", dateFilter.startDate.toISOString())
+            .lte("datetime", dateFilter.endDate.toISOString());
+        } else {
+          // Default: up to today
+          query = query.lte("datetime", new Date().toISOString());
+        }
+
+        const { data } = await query.limit(LIMIT);
+
+        if (data) {
+          set({ transactions: data });
+        }
 
         // Fetch updated balance
-        get().fetchTotalBalance();
+        get().fetchTotalBalance(dateFilter);
       },
 
-      fetchTotalBalance: async () => {
+      fetchTotalBalance: async (dateFilter) => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
 
         const { data } = await supabase.rpc("calculate_balance", {
-          user_id_param: userId
+          user_id_param: userId,
+          start_date: dateFilter?.startDate?.toISOString(),
+          end_date: dateFilter?.endDate?.toISOString()
         });
 
         if (data) {
