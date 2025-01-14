@@ -1,12 +1,18 @@
 import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format, parseISO } from "date-fns";
+import { useTheme } from "@react-navigation/native";
+import { addMonths, parseISO } from "date-fns";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { ActivityIndicator, Alert, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Switch,
+  View
+} from "react-native";
 import CurrencyInput from "react-native-currency-input";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { toast } from "sonner-native";
 
 import type { TransactionFormData } from "~/core/types/transaction";
@@ -14,9 +20,9 @@ import type { TransactionFormData } from "~/core/types/transaction";
 import { CategoryPicker } from "~/components/features/categories/category-picker";
 import { GoalPicker } from "~/components/features/goals/goal-picker";
 import { Button } from "~/components/ui/button";
+import { DatePicker } from "~/components/ui/date-picker";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { PickerButton } from "~/components/ui/picker";
 import { SegmentedControl } from "~/components/ui/segmented-control";
 import { Text } from "~/components/ui/text";
 import { Small } from "~/components/ui/typography";
@@ -25,15 +31,20 @@ import {
   shouldPromptForReview
 } from "~/core/services/app-review";
 import { formatCurrency, getCurrencyByCode } from "~/core/utils/currency";
+import { generateRecurringDates } from "~/core/utils/generate-recurring-dates";
+import { generateId } from "~/core/utils/id";
 import { transactionFormSchema } from "~/core/validations/transaction";
-import { CalendarIcon } from "~/lib/icons";
 import { useCategoriesStore } from "~/store/categories";
 import { useCurrencyStore } from "~/store/currency";
 import { useGoalsStore } from "~/store/goals";
 import { useTransactionsStore } from "~/store/transactions";
 
+const frequencyOptions = ["Daily", "Weekly", "Monthly", "Yearly"];
+
 export default function TransactionFormScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+
+  const theme = useTheme();
 
   const router = useRouter();
 
@@ -42,8 +53,6 @@ export default function TransactionFormScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   const transaction = useTransactionsStore((state) =>
     isEditing ? state.transactions.find((t) => t.id === id) : null
@@ -65,18 +74,43 @@ export default function TransactionFormScreen() {
       resolver: zodResolver(transactionFormSchema),
       defaultValues: transaction ?? {
         type: "expense",
-        datetime: new Date().toISOString()
+        datetime: new Date().toISOString(),
+        isRecurring: false
       }
     });
 
-  const onSubmit = async (data: TransactionFormData) => {
+  const onSubmit = async ({
+    isRecurring,
+    recurring,
+    ...data
+  }: TransactionFormData) => {
     try {
       setIsLoading(true);
 
       if (isEditing) {
         await updateTransaction(id, data);
       } else {
-        await createTransaction(data);
+        if (isRecurring && recurring) {
+          const recurringId = generateId(); // Generate UUID for recurring group
+
+          const dates = generateRecurringDates({
+            ...recurring,
+            startDate: data.datetime!
+          });
+
+          console.log(dates);
+
+          // Create all recurring transactions
+          await createTransaction(
+            dates.map((date) => ({
+              ...data,
+              datetime: date.toISOString(),
+              recurring_id: recurringId
+            }))
+          );
+        } else {
+          await createTransaction([data]);
+        }
 
         // Check and prompt for review after successful creation
         const shouldPrompt = await shouldPromptForReview();
@@ -129,6 +163,12 @@ export default function TransactionFormScreen() {
   };
 
   const type = watch("type");
+
+  const isRecurring = watch("isRecurring");
+
+  const endDate = watch("recurring.endDate");
+
+  const datetime = watch("datetime");
 
   return (
     <>
@@ -246,30 +286,13 @@ export default function TransactionFormScreen() {
           <Controller
             control={control}
             render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <View className="gap-2">
-                <Label>Date</Label>
-                <PickerButton
-                  Icon={CalendarIcon}
-                  onPress={() => setDatePickerVisibility(true)}
-                  placeholder="Select date"
-                  title={
-                    value && format(parseISO(value), "MMM dd, yyyy hh:mm a")
-                  }
-                />
-                {!!error && (
-                  <Small className="text-destructive">{error.message}</Small>
-                )}
-                <DateTimePickerModal
-                  mode="datetime"
-                  onCancel={() => setDatePickerVisibility(false)}
-                  onConfirm={(date) => {
-                    onChange(date.toISOString());
-
-                    setDatePickerVisibility(false);
-                  }}
-                  isVisible={isDatePickerVisible}
-                />
-              </View>
+              <DatePicker
+                error={error?.message}
+                label="Date"
+                onChange={onChange}
+                placeholder="Select date"
+                value={value}
+              />
             )}
             name="datetime"
           />
@@ -291,6 +314,135 @@ export default function TransactionFormScreen() {
             }}
             name="goal_id"
           />
+
+          <Controller
+            control={control}
+            render={({ field: { onChange, value } }) => {
+              const handleOnChange = (nextValue: boolean) => {
+                onChange(nextValue);
+
+                const startDate = datetime ? parseISO(datetime) : new Date();
+
+                setValue(
+                  "recurring",
+                  nextValue
+                    ? {
+                        frequency: "monthly",
+                        endDate: addMonths(startDate, 6).toISOString()
+                      }
+                    : undefined
+                );
+              };
+
+              return (
+                <View className="flex-row items-center justify-between">
+                  <Label
+                    nativeID="isRecurring"
+                    onPress={() => handleOnChange(!value)}
+                  >
+                    Recurring Transaction
+                  </Label>
+                  <Switch
+                    trackColor={{ true: theme.colors.primary }}
+                    onValueChange={handleOnChange}
+                    value={value}
+                  />
+                </View>
+              );
+            }}
+            name="isRecurring"
+          />
+
+          {/* Recurring Options */}
+          {isRecurring && (
+            <>
+              <Controller
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <View className="gap-2">
+                    <Label>Frequency</Label>
+                    <SegmentedControl
+                      values={frequencyOptions}
+                      selectedIndex={frequencyOptions.indexOf(
+                        value?.charAt(0).toUpperCase() + value?.slice(1)
+                      )}
+                      onChange={(event) => {
+                        onChange(
+                          frequencyOptions[
+                            event.nativeEvent.selectedSegmentIndex
+                          ].toLowerCase()
+                        );
+                      }}
+                    />
+                  </View>
+                )}
+                name="recurring.frequency"
+              />
+
+              <View className="gap-2">
+                <Label>End By</Label>
+                <SegmentedControl
+                  values={["End Date", "Occurrences"]}
+                  selectedIndex={endDate ? 0 : 1}
+                  onChange={(event) => {
+                    if (event.nativeEvent.selectedSegmentIndex === 0) {
+                      setValue("recurring.occurrences", undefined);
+
+                      setValue(
+                        "recurring.endDate",
+                        addMonths(new Date(), 6).toISOString()
+                      );
+                    } else {
+                      setValue("recurring.endDate", undefined);
+
+                      setValue("recurring.occurrences", 6);
+                    }
+                  }}
+                />
+              </View>
+
+              {endDate ? (
+                <Controller
+                  control={control}
+                  key="recurring.endDate"
+                  render={({
+                    field: { onChange, value },
+                    fieldState: { error }
+                  }) => (
+                    <DatePicker
+                      error={error?.message}
+                      mode="date"
+                      onChange={onChange}
+                      placeholder="Select date"
+                      value={value}
+                    />
+                  )}
+                  name="recurring.endDate"
+                />
+              ) : (
+                <Controller
+                  control={control}
+                  key="recurring.occurrences"
+                  render={({
+                    field: { onChange, onBlur, value },
+                    fieldState: { error }
+                  }) => (
+                    <Input
+                      error={error?.message}
+                      keyboardType="number-pad"
+                      onBlur={onBlur}
+                      onChangeText={(newValue) =>
+                        onChange(newValue ? parseInt(newValue, 10) : 0)
+                      }
+                      placeholder="Number of times"
+                      value={`${value}`}
+                    />
+                  )}
+                  name="recurring.occurrences"
+                />
+              )}
+            </>
+          )}
 
           <Button
             onPress={handleSubmit(onSubmit)}

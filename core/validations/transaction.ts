@@ -20,7 +20,15 @@ export const transactionFormSchema = z.object({
   category_id: z.string({
     required_error: "Category is required"
   }),
-  goal_id: z.string().optional()
+  goal_id: z.string().optional(),
+  isRecurring: z.boolean().default(false),
+  recurring: z
+    .object({
+      frequency: z.enum(["daily", "weekly", "monthly", "yearly"]),
+      endDate: z.string().optional(),
+      occurrences: z.number().positive().optional()
+    })
+    .optional()
 });
 
 export type TransactionFormSchema = z.infer<typeof transactionFormSchema>;

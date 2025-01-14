@@ -117,6 +117,7 @@ export type Database = {
           datetime: string;
           goal_id: string | null;
           id: string;
+          recurring_id: string | null;
           title: string;
           type: Database["public"]["Enums"]["transaction_type"];
           updated_at: string | null;
@@ -129,6 +130,7 @@ export type Database = {
           datetime?: string;
           goal_id?: string | null;
           id?: string;
+          recurring_id?: string | null;
           title: string;
           type: Database["public"]["Enums"]["transaction_type"];
           updated_at?: string | null;
@@ -141,6 +143,7 @@ export type Database = {
           datetime?: string;
           goal_id?: string | null;
           id?: string;
+          recurring_id?: string | null;
           title?: string;
           type?: Database["public"]["Enums"]["transaction_type"];
           updated_at?: string | null;

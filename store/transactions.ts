@@ -19,7 +19,7 @@ interface TransactionsState {
 interface TransactionsActions {
   fetchLatestTransactions: () => Promise<void>;
   fetchTotalBalance: () => Promise<void>;
-  createTransaction: (data: TransactionFormData) => Promise<void>;
+  createTransaction: (data: TransactionFormData[]) => Promise<void>;
   updateTransaction: (id: string, data: TransactionFormData) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   reset: () => void;
@@ -69,22 +69,26 @@ export const useTransactionsStore = create<TransactionsStore>()(
         }
       },
 
-      createTransaction: async (data) => {
+      createTransaction: async (transactions) => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
 
-        const { data: newTransaction, error } = await supabase
+        const { data, error } = await supabase
           .from("transactions")
-          .insert([{ ...data, user_id: userId }])
-          .select()
-          .single();
+          .insert(
+            transactions.map((transaction) => ({
+              ...transaction,
+              user_id: userId
+            }))
+          )
+          .select();
 
         if (error) throw error;
 
-        if (newTransaction) {
+        if (data) {
           set((state) => ({
-            transactions: [newTransaction, ...state.transactions]
+            transactions: [...data, ...state.transactions]
           }));
 
           // Fetch updated balance

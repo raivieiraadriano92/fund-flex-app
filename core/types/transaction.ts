@@ -14,10 +14,19 @@ export type TransactionInsert =
 export type TransactionUpdate =
   Database["public"]["Tables"]["transactions"]["Update"];
 
+export type TransactionFrequency = "daily" | "weekly" | "monthly" | "yearly";
+
 export type TransactionFormData = Omit<
   TransactionInsert,
   "id" | "created_at" | "updated_at" | "user_id"
->;
+> & {
+  isRecurring?: boolean;
+  recurring?: {
+    frequency: TransactionFrequency;
+    endDate?: string; // Either end date
+    occurrences?: number; // Or number of occurrences
+  };
+};
 
 export type TransactionFiltersFormData = {
   type?: TransactionTypeWithAll;
