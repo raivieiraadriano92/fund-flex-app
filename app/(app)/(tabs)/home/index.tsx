@@ -15,7 +15,7 @@ import { LIMIT, useTransactionsStore } from "~/store/transactions";
 export default function HomeScreen() {
   const router = useRouter();
 
-  const { transactions, totalBalance } = useTransactionsStore();
+  const { transactions, count, totalBalance } = useTransactionsStore();
 
   const categoriesLength = useCategoriesStore(
     (state) => state.categories.length
@@ -27,7 +27,7 @@ export default function HomeScreen() {
     router.push("/(app)/transactions/new");
   };
 
-  const hasTransactions = transactions.length > 0;
+  const hasTransactions = count > 0;
 
   const addNewCategoriesCard = (
     <TouchableOpacity

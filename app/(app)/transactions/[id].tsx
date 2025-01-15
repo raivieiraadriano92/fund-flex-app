@@ -98,8 +98,6 @@ export default function TransactionFormScreen() {
             startDate: data.datetime!
           });
 
-          console.log(dates);
-
           // Create all recurring transactions
           await createTransaction(
             dates.map((date) => ({
@@ -133,6 +131,54 @@ export default function TransactionFormScreen() {
   };
 
   const handleDelete = async () => {
+    const handleDeleteTransaction = async (deleteFutureTransactions?: {
+      recurringId: string;
+      startDate: string;
+    }) => {
+      try {
+        setIsDeleting(true);
+
+        await deleteTransaction(id, deleteFutureTransactions);
+
+        router.back();
+
+        toast.success("Transaction deleted successfully.");
+      } catch (_error) {
+        toast.error(
+          "An error occurred while deleting the transaction. Please try again."
+        );
+      } finally {
+        setIsDeleting(false);
+      }
+    };
+
+    if (transaction?.recurring_id) {
+      Alert.alert(
+        "Delete Recurring Transaction",
+        "This is part of a recurring transaction. Would you like to delete:",
+        [
+          {
+            text: "Cancel",
+            style: "cancel"
+          },
+          {
+            text: "This Transaction Only",
+            onPress: async () => handleDeleteTransaction()
+          },
+          {
+            text: "This and Future Transactions",
+            onPress: async () =>
+              handleDeleteTransaction({
+                recurringId: transaction.recurring_id,
+                startDate: transaction.datetime
+              })
+          }
+        ]
+      );
+
+      return;
+    }
+
     Alert.alert("Delete transaction", "Are you sure?", [
       {
         text: "Cancel",
@@ -141,23 +187,7 @@ export default function TransactionFormScreen() {
       {
         text: "Delete",
         style: "destructive",
-        onPress: async () => {
-          try {
-            setIsDeleting(true);
-
-            await deleteTransaction(id);
-
-            router.back();
-
-            toast.success("Transaction deleted successfully.");
-          } catch (_error) {
-            toast.error(
-              "An error occurred while deleting the transaction. Please try again."
-            );
-          } finally {
-            setIsDeleting(false);
-          }
-        }
+        onPress: async () => handleDeleteTransaction()
       }
     ]);
   };

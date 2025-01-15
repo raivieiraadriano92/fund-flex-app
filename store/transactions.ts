@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { parseISO } from "date-fns";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -14,6 +15,7 @@ import { supabase } from "~/core/api/supabase";
 interface TransactionsState {
   transactions: Transaction[];
   totalBalance: number;
+  count: number;
 }
 
 interface DateFilter {
@@ -24,9 +26,16 @@ interface DateFilter {
 interface TransactionsActions {
   fetchLatestTransactions: (dateFilter?: DateFilter) => Promise<void>;
   fetchTotalBalance: (dateFilter?: DateFilter) => Promise<void>;
+  fetchCount: () => Promise<void>;
   createTransaction: (data: TransactionFormData[]) => Promise<void>;
   updateTransaction: (id: string, data: TransactionFormData) => Promise<void>;
-  deleteTransaction: (id: string) => Promise<void>;
+  deleteTransaction: (
+    id: string,
+    deleteFutureTransactions?: {
+      recurringId: string;
+      startDate: string;
+    }
+  ) => Promise<void>;
   reset: () => void;
 }
 
@@ -39,6 +48,7 @@ export const useTransactionsStore = create<TransactionsStore>()(
     (set, get) => ({
       transactions: [],
       totalBalance: 0,
+      count: 0,
 
       fetchLatestTransactions: async (dateFilter) => {
         const userId = useAuthStore.getState().session?.user.id;
@@ -69,6 +79,9 @@ export const useTransactionsStore = create<TransactionsStore>()(
 
         // Fetch updated balance
         get().fetchTotalBalance(dateFilter);
+
+        // Fetch total count
+        get().fetchCount();
       },
 
       fetchTotalBalance: async (dateFilter) => {
@@ -85,6 +98,19 @@ export const useTransactionsStore = create<TransactionsStore>()(
         if (data) {
           set({ totalBalance: data });
         }
+      },
+
+      fetchCount: async () => {
+        const userId = useAuthStore.getState().session?.user.id;
+
+        if (!userId) throw new Error("User not found");
+
+        const { count } = await supabase
+          .from("transactions")
+          .select("*", { count: "estimated", head: true })
+          .eq("user_id", userId);
+
+        set({ count: count || 0 });
       },
 
       createTransaction: async (transactions) => {
@@ -106,7 +132,8 @@ export const useTransactionsStore = create<TransactionsStore>()(
 
         if (data) {
           set((state) => ({
-            transactions: [...data, ...state.transactions]
+            transactions: [...data, ...state.transactions],
+            count: state.count + data.length
           }));
 
           // Fetch updated balance
@@ -141,23 +168,44 @@ export const useTransactionsStore = create<TransactionsStore>()(
         }
       },
 
-      deleteTransaction: async (id) => {
+      deleteTransaction: async (id, deleteFutureTransactions) => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
 
-        const { error } = await supabase
+        const query = supabase
           .from("transactions")
           .delete()
-          .eq("id", id)
           .eq("user_id", userId);
+
+        if (deleteFutureTransactions) {
+          query
+            .eq("recurring_id", deleteFutureTransactions.recurringId)
+            .gte("datetime", deleteFutureTransactions.startDate);
+        } else {
+          query.eq("id", id);
+        }
+
+        const { error } = await query;
+
+        console.log("error", error);
 
         if (error) throw error;
 
         set((state) => ({
-          transactions: state.transactions.filter(
-            (transaction) => transaction.id !== id
-          )
+          transactions: state.transactions.filter((transaction) => {
+            if (deleteFutureTransactions) {
+              return (
+                transaction.recurring_id !==
+                  deleteFutureTransactions.recurringId ||
+                parseISO(transaction.datetime) <
+                  parseISO(deleteFutureTransactions.startDate)
+              );
+            }
+
+            return transaction.id !== id;
+          }),
+          count: state.count - 1
         }));
 
         // Fetch updated balance
