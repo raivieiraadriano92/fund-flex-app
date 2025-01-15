@@ -31,4 +31,7 @@ export type TransactionFormData = Omit<
 export type TransactionFiltersFormData = {
   type?: TransactionTypeWithAll;
   category_id?: string;
+  period?: "all" | "custom";
+  startDate?: string;
+  endDate?: string;
 };

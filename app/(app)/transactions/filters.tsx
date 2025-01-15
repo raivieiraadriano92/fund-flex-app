@@ -1,15 +1,19 @@
+import { endOfDay, endOfToday, parseISO, startOfDay } from "date-fns";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from "react-native";
 
 import { CategoryPicker } from "~/components/features/categories/category-picker";
 import { Button } from "~/components/ui/button";
+import { DatePicker } from "~/components/ui/date-picker";
 import { Label } from "~/components/ui/label";
 import { SegmentedControl } from "~/components/ui/segmented-control";
 import { Text } from "~/components/ui/text";
 import { events } from "~/core/services/events";
 import { TransactionFiltersFormData } from "~/core/types/transaction";
 import { useCategoriesStore } from "~/store/categories";
+
+const periodOptions = ["All", "Custom"];
 
 export default function TransactionsFiltersScreen() {
   const defaultValues = useLocalSearchParams<TransactionFiltersFormData>();
@@ -18,7 +22,10 @@ export default function TransactionsFiltersScreen() {
     useForm<TransactionFiltersFormData>({
       defaultValues: {
         type: defaultValues.type ?? "all",
-        category_id: defaultValues.category_id ?? undefined
+        category_id: defaultValues.category_id ?? undefined,
+        period: defaultValues.period ?? "custom",
+        startDate: defaultValues.startDate ?? undefined,
+        endDate: defaultValues.endDate ?? endOfToday().toISOString()
       }
     });
 
@@ -32,7 +39,16 @@ export default function TransactionsFiltersScreen() {
     router.back();
   };
 
-  const handleReset = () => reset({ type: "all", category_id: "" });
+  const handleReset = () =>
+    reset({
+      type: "all",
+      category_id: "",
+      period: "custom",
+      startDate: undefined,
+      endDate: endOfToday().toISOString()
+    });
+
+  const period = watch("period");
 
   return (
     <>
@@ -95,6 +111,80 @@ export default function TransactionsFiltersScreen() {
             }}
             name="category_id"
           />
+
+          <Controller
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <View className="gap-2">
+                <Label>Period</Label>
+                <SegmentedControl
+                  values={periodOptions}
+                  selectedIndex={periodOptions.indexOf(
+                    value?.charAt(0).toUpperCase() + value?.slice(1)
+                  )}
+                  onChange={(event) => {
+                    const index = event.nativeEvent.selectedSegmentIndex;
+
+                    onChange(periodOptions[index].toLowerCase());
+
+                    if (index === 0) {
+                      setValue("startDate", undefined);
+
+                      setValue("endDate", undefined);
+                    } else {
+                      setValue("endDate", new Date().toISOString());
+                    }
+                  }}
+                />
+              </View>
+            )}
+            name="period"
+          />
+
+          {period === "custom" && (
+            <>
+              <Controller
+                control={control}
+                key="startDate"
+                render={({
+                  field: { onChange, value },
+                  fieldState: { error }
+                }) => (
+                  <DatePicker
+                    error={error?.message}
+                    label="Start Date"
+                    mode="date"
+                    onChange={(newValue) =>
+                      onChange(startOfDay(parseISO(newValue)).toISOString())
+                    }
+                    placeholder="Select date"
+                    value={value}
+                  />
+                )}
+                name="startDate"
+              />
+              <Controller
+                control={control}
+                key="endDate"
+                render={({
+                  field: { onChange, value },
+                  fieldState: { error }
+                }) => (
+                  <DatePicker
+                    error={error?.message}
+                    label="End Date"
+                    mode="date"
+                    onChange={(newValue) =>
+                      onChange(endOfDay(parseISO(newValue)).toISOString())
+                    }
+                    placeholder="Select date"
+                    value={value}
+                  />
+                )}
+                name="endDate"
+              />
+            </>
+          )}
         </View>
       </ScrollView>
       <View className="pb-safe gap-3 p-6">

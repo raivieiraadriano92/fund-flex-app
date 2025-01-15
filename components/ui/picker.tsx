@@ -36,7 +36,7 @@ export const PickerButton = React.forwardRef<
           !!title && "text-foreground"
         )}
       >
-        {title ?? placeholder}
+        {title || placeholder}
       </Text>
       <Icon className="text-primary" />
     </TouchableOpacity>

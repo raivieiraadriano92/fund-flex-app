@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { endOfToday } from "date-fns";
 import { Stack, useRouter } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
@@ -13,6 +14,7 @@ import {
   Transaction,
   TransactionFiltersFormData
 } from "~/core/types/transaction";
+import { objectToQueryString } from "~/core/utils/url";
 import { SlidersHorizontalIcon } from "~/lib/icons";
 import { LIMIT, useTransactionsStore } from "~/store/transactions";
 
@@ -54,19 +56,6 @@ export default function TransactionsHistoryScreen() {
       clearTimeout(debounceSearchQuery.current);
     }
 
-    /**
-     * If the search query is empty, show the first 20 transactions from the store.
-     */
-    if (!query) {
-      setTransactions(storeTransactions.slice(0, LIMIT));
-
-      setPage(1);
-
-      setHasMore(storeTransactions.length >= LIMIT);
-
-      return;
-    }
-
     debounceSearchQuery.current = setTimeout(async () => {
       setPage(1);
 
@@ -78,7 +67,9 @@ export default function TransactionsHistoryScreen() {
         page: 1,
         searchQuery: searchQuery.current,
         type: filters.current.type,
-        categoryId: filters.current.category_id
+        categoryId: filters.current.category_id,
+        endDate: filters.current.endDate,
+        startDate: filters.current.startDate
       });
 
       if (newTransactions.length !== LIMIT) {
@@ -102,7 +93,9 @@ export default function TransactionsHistoryScreen() {
       page: page + 1,
       searchQuery: searchQuery.current,
       type: filters.current.type,
-      categoryId: filters.current.category_id
+      categoryId: filters.current.category_id,
+      endDate: filters.current.endDate,
+      startDate: filters.current.startDate
     });
 
     setIsLoading(false);
@@ -117,7 +110,9 @@ export default function TransactionsHistoryScreen() {
   };
 
   const filters = useRef<TransactionFiltersFormData>({
-    type: "all"
+    type: "all",
+    period: "custom",
+    endDate: endOfToday().toISOString()
   });
 
   useEffect(() => {
@@ -134,7 +129,9 @@ export default function TransactionsHistoryScreen() {
         page: 1,
         searchQuery: searchQuery.current,
         type: filtersData.type,
-        categoryId: filtersData.category_id
+        categoryId: filtersData.category_id,
+        endDate: filtersData.endDate,
+        startDate: filtersData.startDate
       });
 
       if (newTransactions.length !== LIMIT) {
@@ -159,6 +156,7 @@ export default function TransactionsHistoryScreen() {
         options={{
           headerLargeTitle: true,
           headerSearchBarOptions: {
+            onCancelButtonPress: () => handleChangeSearchQuery(""),
             onChangeText: (event) =>
               handleChangeSearchQuery(event.nativeEvent.text)
           },
@@ -182,7 +180,7 @@ export default function TransactionsHistoryScreen() {
                   className="px-2"
                   onPress={() =>
                     router.push(
-                      `/transactions/filters?type=${filters.current.type ?? "all"}&category_id=${filters.current.category_id ?? ""}`
+                      `/transactions/filters?${objectToQueryString(filters.current)}`
                     )
                   }
                   size="sm"

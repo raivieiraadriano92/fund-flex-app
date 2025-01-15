@@ -10,13 +10,17 @@ type FetchTransactionsOptions = {
   searchQuery?: string;
   type?: TransactionTypeWithAll;
   categoryId?: string;
+  startDate?: string;
+  endDate?: string;
 };
 
 export const fetchFilteredTransactions = async ({
   page,
   searchQuery,
   categoryId,
-  type
+  type,
+  startDate,
+  endDate
 }: FetchTransactionsOptions) => {
   try {
     const userId = useAuthStore.getState().session?.user.id;
@@ -46,6 +50,14 @@ export const fetchFilteredTransactions = async ({
 
     if (categoryId) {
       query.eq("category_id", categoryId);
+    }
+
+    if (startDate) {
+      query.gte("datetime", startDate);
+    }
+
+    if (endDate) {
+      query.lte("datetime", endDate);
     }
 
     const { data } = await query;
