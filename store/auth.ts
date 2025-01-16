@@ -2,9 +2,21 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { AuthStore } from "~/core/types/auth";
+import type { Session } from "@supabase/supabase-js";
 
 import { supabase } from "~/core/api/supabase";
+
+interface AuthState {
+  session: Session | null | undefined;
+}
+
+interface AuthActions {
+  setSession: (session: Session | null) => void;
+  signOut: () => Promise<void>;
+  markAccountToBeDeleted: () => Promise<void>;
+}
+
+type AuthStore = AuthState & AuthActions;
 
 export const useAuthStore = create<AuthStore>()(
   persist(
