@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Storage from "expo-sqlite/kv-store";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -6,16 +7,19 @@ import { useAuthStore } from "./auth";
 
 import type { Category, CategoryFormData } from "~/core/types/category";
 
-import { supabase } from "~/core/api/supabase";
+import { generateId } from "~/core/utils/id";
 
 interface CategoriesState {
   categories: Category[];
+
+  // Sync queues
+  upsertSyncQueue: string[]; // Array of category IDs to be upserted
+  deleteSyncQueue: string[]; // Array of category IDs to be deleted
 }
 
 interface CategoriesActions {
   fetchCategories: () => Promise<void>;
-  createCategory: (data: CategoryFormData) => Promise<void>;
-  createDefaultCategories: (categories: CategoryFormData[]) => Promise<void>;
+  createCategory: (categories: CategoryFormData[]) => Promise<void>;
   updateCategory: (id: string, data: CategoryFormData) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
   reset: () => void;
@@ -23,66 +27,78 @@ interface CategoriesActions {
 
 type CategoriesStore = CategoriesState & CategoriesActions;
 
+const initialCategoriesState: CategoriesState = {
+  categories: [],
+
+  upsertSyncQueue: [],
+  deleteSyncQueue: []
+};
+
 export const useCategoriesStore = create<CategoriesStore>()(
   persist(
     (set) => ({
-      categories: [],
+      ...initialCategoriesState,
 
       fetchCategories: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
 
-        const { data } = await supabase
-          .from("categories")
-          .select("*")
-          .eq("user_id", userId)
-          .order("title");
+        const prefix = `category:${userId}:`;
 
-        set({ categories: data ?? [] });
+        const keys = await Storage.getAllKeys();
+
+        const categoryKeys = keys.filter((key) => key.startsWith(prefix));
+
+        const categories: Category[] = [];
+
+        for (const key of categoryKeys) {
+          try {
+            const item = await Storage.getItem(key);
+
+            if (!item) {
+              continue;
+            }
+
+            const category = JSON.parse(item);
+
+            categories.push(category);
+          } catch (_e) {}
+        }
+
+        set({ categories });
       },
 
-      createCategory: async (data) => {
+      createCategory: async (categories) => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
 
-        const { data: newCategory, error } = await supabase
-          .from("categories")
-          .insert([{ ...data, user_id: userId }])
-          .select()
-          .single();
+        const prefix = `category:${userId}:`;
 
-        if (error) throw error;
+        const newCategories = categories.map<Category>((category) => ({
+          ...category,
+          id: generateId(),
+          user_id: userId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
 
-        if (newCategory) {
-          set((state) => ({
-            categories: [...state.categories, newCategory].sort((a, b) =>
-              a.title.localeCompare(b.title)
-            )
-          }));
+        for (const newCategory of newCategories) {
+          const key = `${prefix}${newCategory.id}`;
+
+          await Storage.setItem(key, JSON.stringify(newCategory));
         }
-      },
 
-      createDefaultCategories: async (categories) => {
-        const userId = useAuthStore.getState().session?.user.id;
-
-        if (!userId) throw new Error("User not found");
-
-        const { data, error } = await supabase
-          .from("categories")
-          .insert(
-            categories.map((category) => ({ ...category, user_id: userId }))
-          )
-          .select();
-
-        if (error) throw error;
-
-        if (data) {
-          set((state) => ({
-            categories: [...state.categories, ...data]
-          }));
-        }
+        set((state) => ({
+          categories: [...state.categories, ...newCategories].sort((a, b) =>
+            a.title.localeCompare(b.title)
+          ),
+          upsertSyncQueue: [
+            ...state.upsertSyncQueue,
+            ...newCategories.map((c) => c.id)
+          ]
+        }));
       },
 
       updateCategory: async (id, data) => {
@@ -90,25 +106,42 @@ export const useCategoriesStore = create<CategoriesStore>()(
 
         if (!userId) throw new Error("User not found");
 
-        const { data: updatedCategory, error } = await supabase
-          .from("categories")
-          .update(data)
-          .eq("id", id)
-          .eq("user_id", userId)
-          .select()
-          .single();
+        const key = `category:${userId}:${id}`;
 
-        if (error) throw error;
+        const item = await Storage.getItem(key);
 
-        if (updatedCategory) {
-          set((state) => ({
-            categories: state.categories
-              .map((category) =>
-                category.id === id ? updatedCategory : category
-              )
-              .sort((a, b) => a.title.localeCompare(b.title))
-          }));
-        }
+        if (!item) throw new Error("Category not found");
+
+        const category = JSON.parse(item);
+
+        const updatedCategory: Category = {
+          ...category,
+          ...data,
+          updated_at: new Date().toISOString()
+        };
+
+        await Storage.setItem(key, JSON.stringify(updatedCategory));
+
+        set((state) => {
+          // update the category in the list
+          const categories = state.categories
+            .map((category) =>
+              category.id === id ? updatedCategory : category
+            )
+            .sort((a, b) => a.title.localeCompare(b.title));
+
+          const upsertSyncQueue = [...state.upsertSyncQueue];
+
+          // add to the upsert sync queue and remove any duplicates
+          if (!upsertSyncQueue.includes(id)) {
+            upsertSyncQueue.push(id);
+          }
+
+          return {
+            categories,
+            upsertSyncQueue
+          };
+        });
       },
 
       deleteCategory: async (id) => {
@@ -116,29 +149,50 @@ export const useCategoriesStore = create<CategoriesStore>()(
 
         if (!userId) throw new Error("User not found");
 
-        const { error } = await supabase
-          .from("categories")
-          .delete()
-          .eq("id", id)
-          .eq("user_id", userId);
+        const key = `category:${userId}:${id}`;
 
-        if (error) throw error;
+        await Storage.removeItem(key);
 
-        set((state) => ({
-          categories: state.categories.filter((category) => category.id !== id)
-        }));
+        set((state) => {
+          const categories = state.categories.filter(
+            (category) => category.id !== id
+          );
+
+          // add to the delete sync queue and remove any duplicates
+          const deleteSyncQueue = [...state.deleteSyncQueue];
+
+          // add to the delete sync queue and remove any duplicates
+          if (!deleteSyncQueue.includes(id)) {
+            deleteSyncQueue.push(id);
+          }
+
+          // remove from the upsert sync queue
+          // (in case the category was upserted offline and then deleted)
+          const upsertSyncQueue = state.upsertSyncQueue.filter(
+            (categoryId) => categoryId !== id
+          );
+
+          return {
+            categories,
+            deleteSyncQueue,
+            upsertSyncQueue
+          };
+        });
       },
 
       reset: () => {
         set({
-          categories: []
+          ...initialCategoriesState
         });
       }
     }),
     {
       name: "categories-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ categories }) => ({ categories })
+      partialize: ({ upsertSyncQueue, deleteSyncQueue }) => ({
+        upsertSyncQueue,
+        deleteSyncQueue
+      })
     }
   )
 );

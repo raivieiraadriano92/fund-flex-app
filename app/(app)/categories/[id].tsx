@@ -54,7 +54,7 @@ export default function CategoryFormScreen() {
       if (isEditing) {
         await updateCategory(id, data);
       } else {
-        await createCategory(data);
+        await createCategory([data]);
       }
 
       router.back();

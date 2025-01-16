@@ -13,9 +13,7 @@ import { CategoryType } from "~/core/types/category";
 import { useCategoriesStore } from "~/store/categories";
 
 export default function CategoriesQuickStartScreen() {
-  const createDefaultCategories = useCategoriesStore(
-    (state) => state.createDefaultCategories
-  );
+  const createCategory = useCategoriesStore((state) => state.createCategory);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,7 +55,7 @@ export default function CategoriesQuickStartScreen() {
           type: category.type
         }));
 
-      await createDefaultCategories(categories);
+      await createCategory(categories);
 
       router.back();
 
