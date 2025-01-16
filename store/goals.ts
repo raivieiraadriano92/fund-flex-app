@@ -1,21 +1,25 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Storage from "expo-sqlite/kv-store";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { useAuthStore } from "./auth";
 
-import type { GoalFormData, GoalWithProgress } from "~/core/types/goal";
+import type { Goal, GoalFormData } from "~/core/types/goal";
 
-import { supabase } from "~/core/api/supabase";
-import { mapGoal } from "~/core/utils/map-goal";
+import { generateId } from "~/core/utils/id";
 
 interface GoalsState {
-  goals: GoalWithProgress[];
+  goals: Goal[];
+
+  // Sync queues
+  upsertSyncQueue: string[]; // Array of goal IDs to be upserted
+  deleteSyncQueue: string[]; // Array of goal IDs to be deleted
 }
 
 interface GoalsActions {
   fetchGoals: () => Promise<void>;
-  createGoal: (data: GoalFormData) => Promise<void>;
+  createGoal: (goals: GoalFormData[]) => Promise<void>;
   updateGoal: (id: string, data: GoalFormData) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
   reset: () => void;
@@ -23,49 +27,78 @@ interface GoalsActions {
 
 type GoalsStore = GoalsState & GoalsActions;
 
+const initialGoalsState: GoalsState = {
+  goals: [],
+
+  upsertSyncQueue: [],
+  deleteSyncQueue: []
+};
+
 export const useGoalsStore = create<GoalsStore>()(
   persist(
     (set) => ({
-      goals: [],
+      ...initialGoalsState,
 
       fetchGoals: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
 
-        const { data } = await supabase
-          .from("goals")
-          .select("*, transactions(amount,type)")
-          .eq("user_id", userId)
-          .order("title");
+        const prefix = `goal:${userId}:`;
 
-        // Transform the data to calculate amount
-        const goalsWithProgress = data?.map(mapGoal) ?? [];
+        const keys = await Storage.getAllKeys();
 
-        set({ goals: goalsWithProgress });
+        const goalKeys = keys.filter((key) => key.startsWith(prefix));
+
+        const goals: Goal[] = [];
+
+        for (const key of goalKeys) {
+          try {
+            const item = await Storage.getItem(key);
+
+            if (!item) {
+              continue;
+            }
+
+            const goal = JSON.parse(item);
+
+            goals.push(goal);
+          } catch (_e) {}
+        }
+
+        set({ goals });
       },
 
-      createGoal: async (data) => {
+      createGoal: async (goals) => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
 
-        const { data: newGoal, error } = await supabase
-          .from("goals")
-          .insert([{ ...data, user_id: userId }])
-          .select()
-          .single();
+        const prefix = `goal:${userId}:`;
 
-        if (error) throw error;
+        const newGoals = goals.map<Goal>((goal) => ({
+          ...goal,
+          id: generateId(),
+          user_id: userId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
 
-        if (newGoal) {
-          set((state) => ({
-            goals: [
-              ...state.goals,
-              { ...newGoal, currentAmount: 0, progress: 0 }
-            ].sort((a, b) => a.title.localeCompare(b.title))
-          }));
+        for (const newGoal of newGoals) {
+          const key = `${prefix}${newGoal.id}`;
+
+          await Storage.setItem(key, JSON.stringify(newGoal));
         }
+
+        set((state) => ({
+          goals: [...state.goals, ...newGoals].sort((a, b) =>
+            a.title.localeCompare(b.title)
+          ),
+          upsertSyncQueue: [
+            ...state.upsertSyncQueue,
+            ...newGoals.map((c) => c.id)
+          ]
+        }));
       },
 
       updateGoal: async (id, data) => {
@@ -73,25 +106,40 @@ export const useGoalsStore = create<GoalsStore>()(
 
         if (!userId) throw new Error("User not found");
 
-        const { data: updatedGoal, error } = await supabase
-          .from("goals")
-          .update(data)
-          .eq("id", id)
-          .eq("user_id", userId)
-          .select("*, transactions(amount,type)")
-          .single();
+        const key = `goal:${userId}:${id}`;
 
-        if (error) throw error;
+        const item = await Storage.getItem(key);
 
-        if (updatedGoal) {
-          const goalWithProgress = mapGoal(updatedGoal);
+        if (!item) throw new Error("Goal not found");
 
-          set((state) => ({
-            goals: state.goals
-              .map((goal) => (goal.id === id ? goalWithProgress : goal))
-              .sort((a, b) => a.title.localeCompare(b.title))
-          }));
-        }
+        const goal = JSON.parse(item);
+
+        const updatedGoal: Goal = {
+          ...goal,
+          ...data,
+          updated_at: new Date().toISOString()
+        };
+
+        await Storage.setItem(key, JSON.stringify(updatedGoal));
+
+        set((state) => {
+          // update the goal in the list
+          const goals = state.goals
+            .map((goal) => (goal.id === id ? updatedGoal : goal))
+            .sort((a, b) => a.title.localeCompare(b.title));
+
+          const upsertSyncQueue = [...state.upsertSyncQueue];
+
+          // add to the upsert sync queue and remove any duplicates
+          if (!upsertSyncQueue.includes(id)) {
+            upsertSyncQueue.push(id);
+          }
+
+          return {
+            goals,
+            upsertSyncQueue
+          };
+        });
       },
 
       deleteGoal: async (id) => {
@@ -99,29 +147,48 @@ export const useGoalsStore = create<GoalsStore>()(
 
         if (!userId) throw new Error("User not found");
 
-        const { error } = await supabase
-          .from("goals")
-          .delete()
-          .eq("id", id)
-          .eq("user_id", userId);
+        const key = `goal:${userId}:${id}`;
 
-        if (error) throw error;
+        await Storage.removeItem(key);
 
-        set((state) => ({
-          goals: state.goals.filter((goal) => goal.id !== id)
-        }));
+        set((state) => {
+          const goals = state.goals.filter((goal) => goal.id !== id);
+
+          // add to the delete sync queue and remove any duplicates
+          const deleteSyncQueue = [...state.deleteSyncQueue];
+
+          // add to the delete sync queue and remove any duplicates
+          if (!deleteSyncQueue.includes(id)) {
+            deleteSyncQueue.push(id);
+          }
+
+          // remove from the upsert sync queue
+          // (in case the goal was upserted offline and then deleted)
+          const upsertSyncQueue = state.upsertSyncQueue.filter(
+            (goalId) => goalId !== id
+          );
+
+          return {
+            goals,
+            deleteSyncQueue,
+            upsertSyncQueue
+          };
+        });
       },
 
       reset: () => {
         set({
-          goals: []
+          ...initialGoalsState
         });
       }
     }),
     {
       name: "goals-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ goals }) => ({ goals })
+      partialize: ({ upsertSyncQueue, deleteSyncQueue }) => ({
+        upsertSyncQueue,
+        deleteSyncQueue
+      })
     }
   )
 );

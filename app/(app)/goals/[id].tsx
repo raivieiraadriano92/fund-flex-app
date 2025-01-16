@@ -54,7 +54,7 @@ export default function GoalFormScreen() {
       if (isEditing) {
         await updateGoal(id, data);
       } else {
-        await createGoal(data);
+        await createGoal([data]);
       }
 
       router.back();
