@@ -1,71 +1,82 @@
-import { Transaction, TransactionTypeWithAll } from "../types/transaction";
+import Storage from "expo-sqlite/kv-store";
+
+import { Transaction } from "../types/transaction";
 
 import { supabase } from "./supabase";
 
 import { useAuthStore } from "~/store/auth";
-import { LIMIT } from "~/store/transactions";
+import { useTransactionsStore } from "~/store/transactions";
 
-type FetchTransactionsOptions = {
-  page: number;
-  searchQuery?: string;
-  type?: TransactionTypeWithAll;
-  categoryId?: string;
-  startDate?: string;
-  endDate?: string;
+const getAndParseTransaction = async (key: string) => {
+  const transaction = await Storage.getItem(key);
+
+  if (!transaction) {
+    return null;
+  }
+
+  return JSON.parse(transaction) as Transaction;
 };
 
-export const fetchFilteredTransactions = async ({
-  page,
-  searchQuery,
-  categoryId,
-  type,
-  startDate,
-  endDate
-}: FetchTransactionsOptions) => {
+export const syncTransactions = async () => {
   try {
     const userId = useAuthStore.getState().session?.user.id;
 
     if (!userId) {
-      return [];
+      throw new Error("User not found");
     }
 
-    const from = (page - 1) * LIMIT;
+    const prefix = `transaction:${userId}:`;
 
-    const to = from + LIMIT - 1;
+    const { deleteSyncQueue, upsertSyncQueue } =
+      useTransactionsStore.getState();
 
-    const query = supabase
-      .from("transactions")
-      .select("*")
-      .eq("user_id", userId)
-      .order("datetime", { ascending: false })
-      .range(from, to);
+    const transactionsToUpsert = await Promise.all(
+      upsertSyncQueue.map(
+        async (id) => await getAndParseTransaction(`${prefix}${id}`)
+      )
+    );
 
-    if (searchQuery) {
-      query.ilike("title", `%${searchQuery}%`);
+    const upsertData = transactionsToUpsert.filter(
+      (transaction) => transaction !== null
+    );
+
+    if (upsertData.length) {
+      const upsertResponse = await supabase
+        .from("transactions")
+        .upsert(upsertData);
+
+      if (upsertResponse.error) {
+        throw upsertResponse.error;
+      }
+
+      useTransactionsStore.setState((state) => ({
+        upsertSyncQueue: state.upsertSyncQueue.filter(
+          (id) => !upsertData.some((transaction) => transaction.id === id)
+        )
+      }));
+
+      console.info("- 💰 Successfully upserted transactions");
     }
 
-    if (type && type !== "all") {
-      query.eq("type", type);
+    if (deleteSyncQueue.length) {
+      const deleteResponse = await supabase
+        .from("transactions")
+        .delete()
+        .in("id", deleteSyncQueue);
+
+      if (deleteResponse.error) {
+        throw deleteResponse.error;
+      }
+
+      useTransactionsStore.setState((state) => ({
+        deleteSyncQueue: state.deleteSyncQueue.filter(
+          (id) => !deleteSyncQueue.includes(id)
+        )
+      }));
+
+      console.info("- 💰 Successfully deleted transactions");
     }
-
-    if (categoryId) {
-      query.eq("category_id", categoryId);
-    }
-
-    if (startDate) {
-      query.gte("datetime", startDate);
-    }
-
-    if (endDate) {
-      query.lte("datetime", endDate);
-    }
-
-    const { data } = await query;
-
-    return (data ?? []) as Transaction[];
-  } catch (_error) {
-    // Handle error (maybe show toast)
-
-    return [];
+  } catch (e) {
+    console.error(e);
   }
 };

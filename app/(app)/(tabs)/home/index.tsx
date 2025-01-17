@@ -1,3 +1,4 @@
+import { parseISO } from "date-fns";
 import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity, View } from "react-native";
 
@@ -10,24 +11,32 @@ import { Text } from "~/components/ui/text";
 import { H1, Muted, P } from "~/components/ui/typography";
 import { PlusIcon, CirclePlusIcon, LayoutGridIcon } from "~/lib/icons";
 import { useCategoriesStore } from "~/store/categories";
-import { LIMIT, useTransactionsStore } from "~/store/transactions";
+import { useTransactionsStore } from "~/store/transactions";
+
+const LIMIT = 20;
+
+const today = new Date();
+
+today.setHours(23, 59, 59, 999); // End of today
 
 export default function HomeScreen() {
   const router = useRouter();
 
-  const { transactions, count, totalBalance } = useTransactionsStore();
+  const { transactions, balance } = useTransactionsStore();
 
   const categoriesLength = useCategoriesStore(
     (state) => state.categories.length
   );
 
-  const recentTransactions = transactions.slice(0, LIMIT);
+  const recentTransactions = transactions
+    .filter((transaction) => parseISO(transaction.datetime) <= today)
+    .slice(0, LIMIT);
 
   const handleCreateTransaction = () => {
     router.push("/(app)/transactions/new");
   };
 
-  const hasTransactions = count > 0;
+  const hasTransactions = transactions.length > 0;
 
   const addNewCategoriesCard = (
     <TouchableOpacity
@@ -97,8 +106,8 @@ export default function HomeScreen() {
                 <Muted className="text-muted-foreground">Total Balance</Muted>
                 <Amount
                   as={H1}
-                  amount={totalBalance}
-                  type={totalBalance > 0 ? "income" : "expense"}
+                  amount={balance}
+                  type={balance > 0 ? "income" : "expense"}
                 />
               </View>
               <View className="gap-3">

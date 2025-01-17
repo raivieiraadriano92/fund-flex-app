@@ -10,13 +10,11 @@ import { useTransactionsStore } from "~/store/transactions";
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const session = useAuthStore((state) => state.session);
 
-  const fetchCategories = useCategoriesStore((state) => state.fetchCategories);
+  const { fetchCategories } = useCategoriesStore();
 
-  const fetchGoals = useGoalsStore((state) => state.fetchGoals);
+  const { fetchGoals } = useGoalsStore();
 
-  const fetchLatestTransactions = useTransactionsStore(
-    (state) => state.fetchLatestTransactions
-  );
+  const { fetchTransactions } = useTransactionsStore();
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -27,7 +25,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           await Promise.all([
             fetchCategories(),
             fetchGoals(),
-            fetchLatestTransactions()
+            fetchTransactions()
           ]);
         }
       } catch (_error) {
@@ -44,7 +42,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
 
     loadData();
-  }, [fetchCategories, fetchGoals, fetchLatestTransactions, session?.user.id]);
+  }, [fetchCategories, fetchGoals, fetchTransactions, session?.user.id]);
 
   if (isLoading) {
     return null;

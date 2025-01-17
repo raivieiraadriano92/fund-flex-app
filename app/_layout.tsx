@@ -21,6 +21,7 @@ import { vexo } from "vexo-analytics";
 import { AuthProvider } from "~/components/providers/auth-provider";
 import { DataProvider } from "~/components/providers/data-provider";
 import { NetworkProvider } from "~/components/providers/network-provider";
+import { SyncDataProvider } from "~/components/providers/sync-data-provider";
 import { useProtectedRoute } from "~/core/hooks/use-protected-route";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
@@ -157,8 +158,10 @@ function RootLayout() {
         <AuthProvider>
           <NetworkProvider>
             <DataProvider>
-              <AuthProtection />
-              <Toaster closeButton richColors />
+              <SyncDataProvider>
+                <AuthProtection />
+                <Toaster closeButton richColors />
+              </SyncDataProvider>
             </DataProvider>
           </NetworkProvider>
         </AuthProvider>

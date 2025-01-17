@@ -48,7 +48,7 @@ export const syncGoals = async () => {
         )
       }));
 
-      console.info("Successfully upserted goals");
+      console.info("- 🎯 Successfully upserted goals");
     }
 
     if (deleteSyncQueue.length) {
@@ -67,7 +67,7 @@ export const syncGoals = async () => {
         )
       }));
 
-      console.info("Successfully deleted goals");
+      console.info("- 🎯 Successfully deleted goals");
     }
   } catch (e) {
     console.error(e);

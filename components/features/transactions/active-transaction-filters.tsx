@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
-
+import { format, parseISO } from "date-fns";
 import { View } from "react-native";
 
 import { Badge } from "~/components/ui/badge";
 import { Text } from "~/components/ui/text";
-import { events } from "~/core/services/events";
 import { TransactionFiltersFormData } from "~/core/types/transaction";
 import { useCategoriesStore } from "~/store/categories";
 
-export function ActiveTransactionFilters() {
-  const [filters, setFilters] = useState<TransactionFiltersFormData>({
-    type: "all"
-  });
+type ActiveTransactionFiltersProps = {
+  filters: TransactionFiltersFormData;
+};
 
+export function ActiveTransactionFilters({
+  filters
+}: ActiveTransactionFiltersProps) {
   const hasFilters = Object.values(filters).some(
     (value) => !!value && value !== "all"
   );
@@ -20,14 +20,6 @@ export function ActiveTransactionFilters() {
   const selectedCategory = useCategoriesStore((state) =>
     state.categories.find((category) => category.id === filters.category_id)
   );
-
-  useEffect(() => {
-    events.on("transaction:applyFilter", setFilters);
-
-    return () => {
-      events.off("transaction:applyFilter");
-    };
-  }, []);
 
   if (!hasFilters) {
     return null;
@@ -43,6 +35,16 @@ export function ActiveTransactionFilters() {
       {!!selectedCategory && (
         <Badge variant="secondary">
           <Text>{`${selectedCategory.emoji} ${selectedCategory.title}`}</Text>
+        </Badge>
+      )}
+      {!!filters.startDate && (
+        <Badge variant="secondary">
+          <Text>{format(parseISO(filters.startDate), "MMM dd, yyyy")}</Text>
+        </Badge>
+      )}
+      {!!filters.endDate && (
+        <Badge variant="secondary">
+          <Text>{format(parseISO(filters.endDate), "MMM dd, yyyy")}</Text>
         </Badge>
       )}
     </View>

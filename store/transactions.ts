@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { parseISO } from "date-fns";
+import Storage from "expo-sqlite/kv-store";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -10,24 +11,21 @@ import type {
   TransactionFormData
 } from "~/core/types/transaction";
 
-import { supabase } from "~/core/api/supabase";
+import { generateId } from "~/core/utils/id";
+import { sortTransactionsByDate } from "~/core/utils/sort";
 
 interface TransactionsState {
   transactions: Transaction[];
-  totalBalance: number;
-  count: number;
-}
+  balance: number; // Total balance of all transactions til today
 
-interface DateFilter {
-  startDate: Date;
-  endDate: Date;
+  // Sync queues
+  upsertSyncQueue: string[]; // Array of transaction IDs to be upserted
+  deleteSyncQueue: string[]; // Array of transaction IDs to be deleted
 }
 
 interface TransactionsActions {
-  fetchLatestTransactions: (dateFilter?: DateFilter) => Promise<void>;
-  fetchTotalBalance: (dateFilter?: DateFilter) => Promise<void>;
-  fetchCount: () => Promise<void>;
-  createTransaction: (data: TransactionFormData[]) => Promise<void>;
+  fetchTransactions: () => Promise<void>;
+  createTransaction: (transactions: TransactionFormData[]) => Promise<void>;
   updateTransaction: (id: string, data: TransactionFormData) => Promise<void>;
   deleteTransaction: (
     id: string,
@@ -36,81 +34,55 @@ interface TransactionsActions {
       startDate: string;
     }
   ) => Promise<void>;
+  calculateBalance: () => void;
   reset: () => void;
 }
 
-export const LIMIT = 20;
-
 type TransactionsStore = TransactionsState & TransactionsActions;
+
+const initialTransactionsState: TransactionsState = {
+  transactions: [],
+  balance: 0,
+
+  upsertSyncQueue: [],
+  deleteSyncQueue: []
+};
 
 export const useTransactionsStore = create<TransactionsStore>()(
   persist(
     (set, get) => ({
-      transactions: [],
-      totalBalance: 0,
-      count: 0,
+      ...initialTransactionsState,
 
-      fetchLatestTransactions: async (dateFilter) => {
+      fetchTransactions: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
 
-        let query = supabase
-          .from("transactions")
-          .select("*")
-          .eq("user_id", userId)
-          .order("datetime", { ascending: false });
+        const prefix = `transaction:${userId}:`;
 
-        // Add date filtering if provided
-        if (dateFilter) {
-          query = query
-            .gte("datetime", dateFilter.startDate.toISOString())
-            .lte("datetime", dateFilter.endDate.toISOString());
-        } else {
-          // Default: up to today
-          query = query.lte("datetime", new Date().toISOString());
+        const keys = await Storage.getAllKeys();
+
+        const transactionKeys = keys.filter((key) => key.startsWith(prefix));
+
+        const transactions: Transaction[] = [];
+
+        for (const key of transactionKeys) {
+          try {
+            const item = await Storage.getItem(key);
+
+            if (!item) {
+              continue;
+            }
+
+            const transaction = JSON.parse(item);
+
+            transactions.push(transaction);
+          } catch (_e) {}
         }
 
-        const { data } = await query.limit(LIMIT);
+        set({ transactions: sortTransactionsByDate(transactions) });
 
-        if (data) {
-          set({ transactions: data });
-        }
-
-        // Fetch updated balance
-        get().fetchTotalBalance(dateFilter);
-
-        // Fetch total count
-        get().fetchCount();
-      },
-
-      fetchTotalBalance: async (dateFilter) => {
-        const userId = useAuthStore.getState().session?.user.id;
-
-        if (!userId) throw new Error("User not found");
-
-        const { data } = await supabase.rpc("calculate_balance", {
-          user_id_param: userId,
-          start_date: dateFilter?.startDate?.toISOString(),
-          end_date: dateFilter?.endDate?.toISOString()
-        });
-
-        if (data) {
-          set({ totalBalance: data });
-        }
-      },
-
-      fetchCount: async () => {
-        const userId = useAuthStore.getState().session?.user.id;
-
-        if (!userId) throw new Error("User not found");
-
-        const { count } = await supabase
-          .from("transactions")
-          .select("*", { count: "estimated", head: true })
-          .eq("user_id", userId);
-
-        set({ count: count || 0 });
+        get().calculateBalance();
       },
 
       createTransaction: async (transactions) => {
@@ -118,27 +90,36 @@ export const useTransactionsStore = create<TransactionsStore>()(
 
         if (!userId) throw new Error("User not found");
 
-        const { data, error } = await supabase
-          .from("transactions")
-          .insert(
-            transactions.map((transaction) => ({
-              ...transaction,
-              user_id: userId
-            }))
-          )
-          .select();
+        const prefix = `transaction:${userId}:`;
 
-        if (error) throw error;
+        const newTransactions = transactions.map<Transaction>(
+          (transaction) => ({
+            ...transaction,
+            id: generateId(),
+            user_id: userId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+        );
 
-        if (data) {
-          set((state) => ({
-            transactions: [...data, ...state.transactions],
-            count: state.count + data.length
-          }));
+        for (const newTransaction of newTransactions) {
+          const key = `${prefix}${newTransaction.id}`;
 
-          // Fetch updated balance
-          get().fetchTotalBalance();
+          await Storage.setItem(key, JSON.stringify(newTransaction));
         }
+
+        set((state) => ({
+          transactions: sortTransactionsByDate([
+            ...state.transactions,
+            ...newTransactions
+          ]),
+          upsertSyncQueue: [
+            ...state.upsertSyncQueue,
+            ...newTransactions.map((c) => c.id)
+          ]
+        }));
+
+        get().calculateBalance();
       },
 
       updateTransaction: async (id, data) => {
@@ -146,26 +127,44 @@ export const useTransactionsStore = create<TransactionsStore>()(
 
         if (!userId) throw new Error("User not found");
 
-        const { data: updatedTransaction, error } = await supabase
-          .from("transactions")
-          .update(data)
-          .eq("id", id)
-          .eq("user_id", userId)
-          .select()
-          .single();
+        const key = `transaction:${userId}:${id}`;
 
-        if (error) throw error;
+        const item = await Storage.getItem(key);
 
-        if (updatedTransaction) {
-          set((state) => ({
-            transactions: state.transactions.map((transaction) =>
+        if (!item) throw new Error("Transaction not found");
+
+        const transaction = JSON.parse(item);
+
+        const updatedTransaction: Transaction = {
+          ...transaction,
+          ...data,
+          updated_at: new Date().toISOString()
+        };
+
+        await Storage.setItem(key, JSON.stringify(updatedTransaction));
+
+        set((state) => {
+          // update the transaction in the list
+          const transactions = sortTransactionsByDate(
+            state.transactions.map((transaction) =>
               transaction.id === id ? updatedTransaction : transaction
             )
-          }));
+          );
 
-          // Fetch updated balance
-          get().fetchTotalBalance();
-        }
+          const upsertSyncQueue = [...state.upsertSyncQueue];
+
+          // add to the upsert sync queue and remove any duplicates
+          if (!upsertSyncQueue.includes(id)) {
+            upsertSyncQueue.push(id);
+          }
+
+          return {
+            transactions,
+            upsertSyncQueue
+          };
+        });
+
+        get().calculateBalance();
       },
 
       deleteTransaction: async (id, deleteFutureTransactions) => {
@@ -173,55 +172,91 @@ export const useTransactionsStore = create<TransactionsStore>()(
 
         if (!userId) throw new Error("User not found");
 
-        const query = supabase
-          .from("transactions")
-          .delete()
-          .eq("user_id", userId);
+        let transactionsToDelete = [id];
 
         if (deleteFutureTransactions) {
-          query
-            .eq("recurring_id", deleteFutureTransactions.recurringId)
-            .gte("datetime", deleteFutureTransactions.startDate);
-        } else {
-          query.eq("id", id);
+          const { recurringId, startDate } = deleteFutureTransactions;
+
+          transactionsToDelete = get()
+            .transactions.filter(
+              (transaction) =>
+                transaction.recurring_id === recurringId &&
+                parseISO(transaction.datetime) >= parseISO(startDate)
+            )
+            .map((transaction) => transaction.id);
         }
 
-        const { error } = await query;
+        for (const transactionId of transactionsToDelete) {
+          const key = `transaction:${userId}:${transactionId}`;
 
-        console.log("error", error);
+          await Storage.removeItem(key);
+        }
 
-        if (error) throw error;
+        set((state) => {
+          const transactions = state.transactions.filter(
+            (transaction) => !transactionsToDelete.includes(transaction.id)
+          );
 
-        set((state) => ({
-          transactions: state.transactions.filter((transaction) => {
-            if (deleteFutureTransactions) {
-              return (
-                transaction.recurring_id !==
-                  deleteFutureTransactions.recurringId ||
-                parseISO(transaction.datetime) <
-                  parseISO(deleteFutureTransactions.startDate)
-              );
+          // add to the delete sync queue and remove any duplicates
+          const deleteSyncQueue = [...state.deleteSyncQueue];
+
+          // add to the delete sync queue and remove any duplicates
+          for (const transactionId of transactionsToDelete) {
+            if (!deleteSyncQueue.includes(transactionId)) {
+              deleteSyncQueue.push(transactionId);
             }
+          }
 
-            return transaction.id !== id;
-          }),
-          count: state.count - 1
-        }));
+          // remove from the upsert sync queue
+          // (in case the transaction was upserted offline and then deleted)
+          const upsertSyncQueue = state.upsertSyncQueue.filter(
+            (transactionId) => !transactionsToDelete.includes(transactionId)
+          );
 
-        // Fetch updated balance
-        get().fetchTotalBalance();
+          return {
+            transactions,
+            deleteSyncQueue,
+            upsertSyncQueue
+          };
+        });
+
+        get().calculateBalance();
       },
+
+      calculateBalance: () =>
+        set((state) => {
+          const today = new Date();
+
+          today.setHours(23, 59, 59, 999); // End of today
+
+          const balance = state.transactions
+            // exclude future transactions
+            .filter((transaction) => parseISO(transaction.datetime) <= today)
+            .reduce(
+              (total, transaction) =>
+                total +
+                (transaction.type === "income"
+                  ? transaction.amount
+                  : -transaction.amount),
+              0
+            );
+
+          return { balance };
+        }),
 
       reset: () => {
         set({
-          transactions: []
+          ...initialTransactionsState
         });
       }
     }),
     {
       name: "transactions-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ transactions }) => ({ transactions })
+      partialize: ({ upsertSyncQueue, deleteSyncQueue }) => ({
+        upsertSyncQueue,
+        deleteSyncQueue
+      })
     }
   )
 );

@@ -54,7 +54,7 @@ export const syncCategories = async () => {
         )
       }));
 
-      console.info("Successfully upserted categories");
+      console.info("- 📋 Successfully upserted categories");
     }
 
     if (deleteSyncQueue.length) {
@@ -73,7 +73,7 @@ export const syncCategories = async () => {
         )
       }));
 
-      console.info("Successfully deleted categories");
+      console.info("- 📋 Successfully deleted categories");
     }
   } catch (e) {
     console.error(e);

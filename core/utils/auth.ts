@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Storage from "expo-sqlite/kv-store";
 
 import { useAuthStore } from "~/store/auth";
 import { useCategoriesStore } from "~/store/categories";
@@ -18,4 +19,6 @@ export async function signOut() {
   useCurrencyStore.getState().reset();
 
   AsyncStorage.clear();
+
+  Storage.clear();
 }
