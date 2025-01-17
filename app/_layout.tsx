@@ -20,7 +20,6 @@ import { vexo } from "vexo-analytics";
 
 import { AuthProvider } from "~/components/providers/auth-provider";
 import { DataProvider } from "~/components/providers/data-provider";
-import { NetworkProvider } from "~/components/providers/network-provider";
 import { SyncDataProvider } from "~/components/providers/sync-data-provider";
 import { useProtectedRoute } from "~/core/hooks/use-protected-route";
 import { NAV_THEME } from "~/lib/constants";
@@ -156,14 +155,12 @@ function RootLayout() {
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
         <StatusBar animated style={isDarkColorScheme ? "light" : "dark"} />
         <AuthProvider>
-          <NetworkProvider>
-            <DataProvider>
-              <SyncDataProvider>
-                <AuthProtection />
-                <Toaster closeButton richColors />
-              </SyncDataProvider>
-            </DataProvider>
-          </NetworkProvider>
+          <DataProvider>
+            <SyncDataProvider>
+              <AuthProtection />
+              <Toaster closeButton richColors />
+            </SyncDataProvider>
+          </DataProvider>
         </AuthProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
