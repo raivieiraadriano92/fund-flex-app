@@ -17,7 +17,7 @@ const getAndParseGoal = async (key: string) => {
   return JSON.parse(goal) as Goal;
 };
 
-export const pushLocalGoals = async () => {
+export const pushLocalGoalUpserts = async () => {
   try {
     const userId = useAuthStore.getState().session?.user.id;
 
@@ -27,7 +27,7 @@ export const pushLocalGoals = async () => {
 
     const prefix = `goal:${userId}:`;
 
-    const { deleteSyncQueue, upsertSyncQueue } = useGoalsStore.getState();
+    const { upsertSyncQueue } = useGoalsStore.getState();
 
     const goalsToUpsert = await Promise.all(
       upsertSyncQueue.map(async (id) => await getAndParseGoal(`${prefix}${id}`))
@@ -50,6 +50,20 @@ export const pushLocalGoals = async () => {
 
       console.info("- 🎯 Successfully upserted goals");
     }
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const pushLocalGoalDeletes = async () => {
+  try {
+    const userId = useAuthStore.getState().session?.user.id;
+
+    if (!userId) {
+      throw new Error("User not found");
+    }
+
+    const { deleteSyncQueue } = useGoalsStore.getState();
 
     if (deleteSyncQueue.length) {
       const deleteResponse = await supabase

@@ -17,7 +17,7 @@ const getAndParseCategory = async (key: string) => {
   return JSON.parse(category) as Category;
 };
 
-export const pushLocalCategories = async () => {
+export const pushLocalCategoryUpserts = async () => {
   try {
     const userId = useAuthStore.getState().session?.user.id;
 
@@ -27,7 +27,7 @@ export const pushLocalCategories = async () => {
 
     const prefix = `category:${userId}:`;
 
-    const { deleteSyncQueue, upsertSyncQueue } = useCategoriesStore.getState();
+    const { upsertSyncQueue } = useCategoriesStore.getState();
 
     const categoriesToUpsert = await Promise.all(
       upsertSyncQueue.map(
@@ -56,6 +56,20 @@ export const pushLocalCategories = async () => {
 
       console.info("- 📋 Successfully upserted categories");
     }
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const pushLocalCategoryDeletes = async () => {
+  try {
+    const userId = useAuthStore.getState().session?.user.id;
+
+    if (!userId) {
+      throw new Error("User not found");
+    }
+
+    const { deleteSyncQueue } = useCategoriesStore.getState();
 
     if (deleteSyncQueue.length) {
       const deleteResponse = await supabase

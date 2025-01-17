@@ -17,7 +17,7 @@ const getAndParseTransaction = async (key: string) => {
   return JSON.parse(transaction) as Transaction;
 };
 
-export const pushLocalTransactions = async () => {
+export const pushLocalTransactionUpserts = async () => {
   try {
     const userId = useAuthStore.getState().session?.user.id;
 
@@ -27,8 +27,7 @@ export const pushLocalTransactions = async () => {
 
     const prefix = `transaction:${userId}:`;
 
-    const { deleteSyncQueue, upsertSyncQueue } =
-      useTransactionsStore.getState();
+    const { upsertSyncQueue } = useTransactionsStore.getState();
 
     const transactionsToUpsert = await Promise.all(
       upsertSyncQueue.map(
@@ -57,6 +56,20 @@ export const pushLocalTransactions = async () => {
 
       console.info("- 💰 Successfully upserted transactions");
     }
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const pushLocalTransactionDeletes = async () => {
+  try {
+    const userId = useAuthStore.getState().session?.user.id;
+
+    if (!userId) {
+      throw new Error("User not found");
+    }
+
+    const { deleteSyncQueue } = useTransactionsStore.getState();
 
     if (deleteSyncQueue.length) {
       const deleteResponse = await supabase

@@ -1,6 +1,8 @@
-- populate local db on login with remote data
+<!-- - populate local db on login with remote data -->
 
 - split transaction amount goal
-- repeat transaction for a period
-- implement period filter
+  <!-- - repeat transaction for a period -->
+  <!-- - implement period filter -->
 - reminders/notifications
+  - recurring transaction finished
+  - individual transactions
