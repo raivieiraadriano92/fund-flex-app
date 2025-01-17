@@ -7,6 +7,7 @@ import { useAuthStore } from "./auth";
 
 import type { Category, CategoryFormData } from "~/core/types/category";
 
+import { supabase } from "~/core/api/supabase";
 import { generateId } from "~/core/utils/id";
 
 interface CategoriesState {
@@ -15,6 +16,11 @@ interface CategoriesState {
   // Sync queues
   upsertSyncQueue: string[]; // Array of category IDs to be upserted
   deleteSyncQueue: string[]; // Array of category IDs to be deleted
+
+  // indicates if the remote pull has been completed
+  // (used to prevent multiple remote pulls)
+  // data will be pulled from the remote only once at the sign in
+  remotePullCompleted: boolean;
 }
 
 interface CategoriesActions {
@@ -31,18 +37,64 @@ const initialCategoriesState: CategoriesState = {
   categories: [],
 
   upsertSyncQueue: [],
-  deleteSyncQueue: []
+  deleteSyncQueue: [],
+
+  remotePullCompleted: false
+};
+
+const pullRemoteCategories = async () => {
+  try {
+    const userId = useAuthStore.getState().session?.user.id;
+
+    if (!userId) {
+      throw new Error("User not found");
+    }
+
+    const response = await supabase
+      .from("categories")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (response.error) {
+      throw response.error;
+    }
+
+    const categories = response.data as Category[];
+
+    const prefix = `category:${userId}:`;
+
+    await Promise.all(
+      categories.map(async (category) => {
+        await Storage.setItem(
+          `${prefix}${category.id}`,
+          JSON.stringify(category)
+        );
+      })
+    );
+
+    // useCategoriesStore.setState({
+    //   categories
+    // });
+
+    console.info("- 📋 Successfully pulled categories");
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const useCategoriesStore = create<CategoriesStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialCategoriesState,
 
       fetchCategories: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
+
+        if (!get().remotePullCompleted) {
+          await pullRemoteCategories();
+        }
 
         const prefix = `category:${userId}:`;
 
@@ -66,7 +118,7 @@ export const useCategoriesStore = create<CategoriesStore>()(
           } catch (_e) {}
         }
 
-        set({ categories });
+        set({ categories, remotePullCompleted: true });
       },
 
       createCategory: async (categories) => {
@@ -189,9 +241,14 @@ export const useCategoriesStore = create<CategoriesStore>()(
     {
       name: "categories-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ upsertSyncQueue, deleteSyncQueue }) => ({
+      partialize: ({
         upsertSyncQueue,
-        deleteSyncQueue
+        deleteSyncQueue,
+        remotePullCompleted
+      }) => ({
+        upsertSyncQueue,
+        deleteSyncQueue,
+        remotePullCompleted
       })
     }
   )

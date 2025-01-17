@@ -80,5 +80,3 @@ export const pushLocalTransactions = async () => {
     console.error(e);
   }
 };
-
-export const pullRemoteTransactions = async () => {};

@@ -11,6 +11,7 @@ import type {
   TransactionFormData
 } from "~/core/types/transaction";
 
+import { supabase } from "~/core/api/supabase";
 import { generateId } from "~/core/utils/id";
 import { sortTransactionsByDate } from "~/core/utils/sort";
 
@@ -21,6 +22,11 @@ interface TransactionsState {
   // Sync queues
   upsertSyncQueue: string[]; // Array of transaction IDs to be upserted
   deleteSyncQueue: string[]; // Array of transaction IDs to be deleted
+
+  // indicates if the remote pull has been completed
+  // (used to prevent multiple remote pulls)
+  // data will be pulled from the remote only once at the sign in
+  remotePullCompleted: boolean;
 }
 
 interface TransactionsActions {
@@ -45,7 +51,42 @@ const initialTransactionsState: TransactionsState = {
   balance: 0,
 
   upsertSyncQueue: [],
-  deleteSyncQueue: []
+  deleteSyncQueue: [],
+
+  remotePullCompleted: false
+};
+
+const pullRemoteTransactions = async () => {
+  try {
+    const userId = useAuthStore.getState().session?.user.id;
+
+    if (!userId) {
+      throw new Error("User not found");
+    }
+
+    const response = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (response.error) {
+      throw response.error;
+    }
+
+    const transactions = response.data as Transaction[];
+
+    await Promise.all(
+      transactions.map(async (transaction) => {
+        const key = `transaction:${userId}:${transaction.id}`;
+
+        await Storage.setItem(key, JSON.stringify(transaction));
+      })
+    );
+
+    console.info("- 💰 Successfully pulled transactions");
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const useTransactionsStore = create<TransactionsStore>()(
@@ -57,6 +98,10 @@ export const useTransactionsStore = create<TransactionsStore>()(
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
+
+        if (!get().remotePullCompleted) {
+          await pullRemoteTransactions();
+        }
 
         const prefix = `transaction:${userId}:`;
 
@@ -80,7 +125,10 @@ export const useTransactionsStore = create<TransactionsStore>()(
           } catch (_e) {}
         }
 
-        set({ transactions: sortTransactionsByDate(transactions) });
+        set({
+          transactions: sortTransactionsByDate(transactions),
+          remotePullCompleted: true
+        });
 
         get().calculateBalance();
       },
@@ -253,9 +301,14 @@ export const useTransactionsStore = create<TransactionsStore>()(
     {
       name: "transactions-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ upsertSyncQueue, deleteSyncQueue }) => ({
+      partialize: ({
         upsertSyncQueue,
-        deleteSyncQueue
+        deleteSyncQueue,
+        remotePullCompleted
+      }) => ({
+        upsertSyncQueue,
+        deleteSyncQueue,
+        remotePullCompleted
       })
     }
   )

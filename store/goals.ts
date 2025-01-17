@@ -7,6 +7,7 @@ import { useAuthStore } from "./auth";
 
 import type { Goal, GoalFormData } from "~/core/types/goal";
 
+import { supabase } from "~/core/api/supabase";
 import { generateId } from "~/core/utils/id";
 
 interface GoalsState {
@@ -15,6 +16,11 @@ interface GoalsState {
   // Sync queues
   upsertSyncQueue: string[]; // Array of goal IDs to be upserted
   deleteSyncQueue: string[]; // Array of goal IDs to be deleted
+
+  // indicates if the remote pull has been completed
+  // (used to prevent multiple remote pulls)
+  // data will be pulled from the remote only once at the sign in
+  remotePullCompleted: boolean;
 }
 
 interface GoalsActions {
@@ -31,18 +37,61 @@ const initialGoalsState: GoalsState = {
   goals: [],
 
   upsertSyncQueue: [],
-  deleteSyncQueue: []
+  deleteSyncQueue: [],
+
+  remotePullCompleted: false
+};
+
+const pullRemoteGoals = async () => {
+  try {
+    const userId = useAuthStore.getState().session?.user.id;
+
+    if (!userId) {
+      throw new Error("User not found");
+    }
+
+    const response = await supabase
+      .from("goals")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (response.error) {
+      throw response.error;
+    }
+
+    const goals = response.data as Goal[];
+
+    await Promise.all(
+      goals.map(async (goal) => {
+        const key = `goal:${userId}:${goal.id}`;
+
+        await Storage.setItem(key, JSON.stringify(goal));
+      })
+    );
+
+    // useGoalsStore.setState({
+    //   goals
+    // });
+
+    console.info("- 🎯 Successfully pulled goals");
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const useGoalsStore = create<GoalsStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialGoalsState,
 
       fetchGoals: async () => {
         const userId = useAuthStore.getState().session?.user.id;
 
         if (!userId) throw new Error("User not found");
+
+        if (!get().remotePullCompleted) {
+          await pullRemoteGoals();
+        }
 
         const prefix = `goal:${userId}:`;
 
@@ -66,7 +115,7 @@ export const useGoalsStore = create<GoalsStore>()(
           } catch (_e) {}
         }
 
-        set({ goals });
+        set({ goals, remotePullCompleted: true });
       },
 
       createGoal: async (goals) => {
@@ -185,9 +234,14 @@ export const useGoalsStore = create<GoalsStore>()(
     {
       name: "goals-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ upsertSyncQueue, deleteSyncQueue }) => ({
+      partialize: ({
         upsertSyncQueue,
-        deleteSyncQueue
+        deleteSyncQueue,
+        remotePullCompleted
+      }) => ({
+        upsertSyncQueue,
+        deleteSyncQueue,
+        remotePullCompleted
       })
     }
   )

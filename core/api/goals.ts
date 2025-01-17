@@ -73,5 +73,3 @@ export const pushLocalGoals = async () => {
     console.error(e);
   }
 };
-
-export const pullRemoteGoals = async () => {};

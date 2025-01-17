@@ -1,4 +1,3 @@
-// components/providers/auth-provider.tsx
 import { useEffect } from "react";
 
 import * as Sentry from "@sentry/react-native";

@@ -79,5 +79,3 @@ export const pushLocalCategories = async () => {
     console.error(e);
   }
 };
-
-export const pullRemoteCategories = async () => {};
