@@ -153,7 +153,6 @@ export default function TransactionsFiltersScreen() {
                   <DatePicker
                     error={error?.message}
                     label="Start Date"
-                    mode="date"
                     onChange={(newValue) =>
                       onChange(startOfDay(parseISO(newValue)).toISOString())
                     }
@@ -173,7 +172,6 @@ export default function TransactionsFiltersScreen() {
                   <DatePicker
                     error={error?.message}
                     label="End Date"
-                    mode="date"
                     onChange={(newValue) =>
                       onChange(endOfDay(parseISO(newValue)).toISOString())
                     }

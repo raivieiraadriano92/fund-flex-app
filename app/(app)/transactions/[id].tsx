@@ -441,7 +441,6 @@ export default function TransactionFormScreen() {
                   }) => (
                     <DatePicker
                       error={error?.message}
-                      mode="date"
                       onChange={onChange}
                       placeholder="Select date"
                       value={value}

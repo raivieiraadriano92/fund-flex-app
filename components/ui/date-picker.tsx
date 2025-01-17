@@ -23,7 +23,7 @@ type DatePickerProps = Pick<ReactNativeModalDateTimePickerProps, "mode"> & {
 export const DatePicker = ({
   error,
   label,
-  mode = "datetime",
+  mode = "date",
   onChange,
   placeholder,
   value
