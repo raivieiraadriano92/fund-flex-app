@@ -17,6 +17,7 @@ import { SegmentedControl } from "~/components/ui/segmented-control";
 import { Text } from "~/components/ui/text";
 import { categoryFormSchema } from "~/core/validations/category";
 import { useCategoriesStore } from "~/store/categories";
+import { useTransactionsStore } from "~/store/transactions";
 
 export default function CategoryFormScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -82,15 +83,31 @@ export default function CategoryFormScreen() {
           try {
             setIsDeleting(true);
 
+            const hasTransactions = useTransactionsStore
+              .getState()
+              .transactions.some((t) => t.category_id === id);
+
+            if (hasTransactions) {
+              throw new Error(
+                "This category has linked transactions. Please unlink or delete those transactions first.",
+                { cause: "hasTransactions" }
+              );
+            }
+
             await deleteCategory(id);
 
             router.back();
 
             toast.success("Category deleted successfully.");
-          } catch (_error) {
-            toast.error(
-              "An error occurred while deleting the category. Please try again."
-            );
+          } catch (error: any) {
+            let message =
+              "An error occurred while deleting the category. Please try again.";
+
+            if (error.cause === "hasTransactions") {
+              message = error.message;
+            }
+
+            toast.error(message);
           } finally {
             setIsDeleting(false);
           }

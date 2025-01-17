@@ -18,6 +18,7 @@ import { Text } from "~/components/ui/text";
 import { Small } from "~/components/ui/typography";
 import { goalFormSchema } from "~/core/validations/goal";
 import { useGoalsStore } from "~/store/goals";
+import { useTransactionsStore } from "~/store/transactions";
 
 export default function GoalFormScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -80,15 +81,31 @@ export default function GoalFormScreen() {
           try {
             setIsDeleting(true);
 
+            const hasTransactions = useTransactionsStore
+              .getState()
+              .transactions.some((t) => t.goal_id === id);
+
+            if (hasTransactions) {
+              throw new Error(
+                "This goal has linked transactions. Please unlink or delete those transactions first.",
+                { cause: "hasTransactions" }
+              );
+            }
+
             await deleteGoal(id);
 
             router.back();
 
             toast.success("Goal deleted successfully.");
-          } catch (_error) {
-            toast.error(
-              "An error occurred while deleting the goal. Please try again."
-            );
+          } catch (error: any) {
+            let message =
+              "An error occurred while deleting the goal. Please try again.";
+
+            if (error.cause === "hasTransactions") {
+              message = error.message;
+            }
+
+            toast.error(message);
           } finally {
             setIsDeleting(false);
           }
