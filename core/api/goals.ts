@@ -17,7 +17,7 @@ const getAndParseGoal = async (key: string) => {
   return JSON.parse(goal) as Goal;
 };
 
-export const syncGoals = async () => {
+export const pushLocalGoals = async () => {
   try {
     const userId = useAuthStore.getState().session?.user.id;
 
@@ -73,3 +73,5 @@ export const syncGoals = async () => {
     console.error(e);
   }
 };
+
+export const pullRemoteGoals = async () => {};

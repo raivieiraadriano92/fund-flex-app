@@ -17,7 +17,7 @@ const getAndParseTransaction = async (key: string) => {
   return JSON.parse(transaction) as Transaction;
 };
 
-export const syncTransactions = async () => {
+export const pushLocalTransactions = async () => {
   try {
     const userId = useAuthStore.getState().session?.user.id;
 
@@ -80,3 +80,5 @@ export const syncTransactions = async () => {
     console.error(e);
   }
 };
+
+export const pullRemoteTransactions = async () => {};

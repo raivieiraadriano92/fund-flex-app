@@ -17,7 +17,7 @@ const getAndParseCategory = async (key: string) => {
   return JSON.parse(category) as Category;
 };
 
-export const syncCategories = async () => {
+export const pushLocalCategories = async () => {
   try {
     const userId = useAuthStore.getState().session?.user.id;
 
@@ -79,3 +79,5 @@ export const syncCategories = async () => {
     console.error(e);
   }
 };
+
+export const pullRemoteCategories = async () => {};
