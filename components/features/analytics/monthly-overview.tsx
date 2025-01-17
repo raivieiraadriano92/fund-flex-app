@@ -7,13 +7,13 @@ import { Amount } from "~/components/ui/amount";
 import { Separator } from "~/components/ui/separator";
 import { Text } from "~/components/ui/text";
 import { H3, P } from "~/components/ui/typography";
-import { MonthlyData } from "~/core/types/analytics";
+import { MonthlyOverviewData } from "~/core/types/analytics";
 import { calculateChartScale } from "~/core/utils/chart";
 import { formatCurrency } from "~/core/utils/currency";
 import { useCurrencyStore } from "~/store/currency";
 
 interface MonthlyOverviewProps {
-  data: MonthlyData[];
+  data: MonthlyOverviewData[];
 }
 
 export function MonthlyOverview({ data }: MonthlyOverviewProps) {

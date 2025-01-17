@@ -1,69 +1,47 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
-import { endOfMonth, startOfMonth } from "date-fns";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { endOfToday, parseISO, startOfToday, subMonths } from "date-fns";
+import { ScrollView, View } from "react-native";
 
 import { CategoryBreakdown } from "~/components/features/analytics/category-breakdown";
 import { MonthlyOverview } from "~/components/features/analytics/monthly-overview";
 import { P } from "~/components/ui/typography";
 import {
-  fetchCategoryBreakdown,
-  fetchMonthlyOverview
-} from "~/core/api/analytics";
-import { CategoryBreakdownData, MonthlyData } from "~/core/types/analytics";
+  getCategoryBreakdown,
+  getMonthlyOverview
+} from "~/core/utils/analytics";
+import { useCategoriesStore } from "~/store/categories";
 import { useTransactionsStore } from "~/store/transactions";
 
-export default function AnalyticsScreen() {
-  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+const sixMonthsAgo = subMonths(startOfToday(), 6);
 
-  const [categoryData, setCategoryData] = useState<CategoryBreakdownData[]>([]);
+const today = endOfToday();
+
+export default function AnalyticsScreen() {
+  const transactions = useTransactionsStore((state) =>
+    // last 6 months of transactions
+    state.transactions.filter((t) => {
+      const date = parseISO(t.datetime);
+
+      return date >= sixMonthsAgo && date <= today;
+    })
+  );
+
+  const categories = useCategoriesStore((state) => state.categories);
+
+  const monthlyData = useMemo(
+    () => getMonthlyOverview(transactions),
+    [transactions]
+  );
+
+  const categoryData = useMemo(
+    () => getCategoryBreakdown(transactions, categories),
+    [transactions, categories]
+  );
 
   const hasTransactions = useTransactionsStore(
     (state) => state.transactions.length > 0
   );
-
-  const [isLoading, setIsLoading] = useState(hasTransactions);
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setIsLoading(true);
-
-        const sixMonthsAgo = new Date();
-
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-        const startDate = startOfMonth(sixMonthsAgo);
-
-        const endDate = endOfMonth(new Date());
-
-        const [monthlyOverview, categoryBreakdown] = await Promise.all([
-          fetchMonthlyOverview(startDate, endDate),
-          fetchCategoryBreakdown(startDate, endDate)
-        ]);
-
-        setMonthlyData(monthlyOverview);
-
-        setCategoryData(categoryBreakdown);
-      } catch (_error) {
-        // Handle error (maybe show toast)
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (hasTransactions) {
-      loadData();
-    }
-  }, [hasTransactions]);
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator />
-      </View>
-    );
-  }
 
   if (!hasTransactions) {
     return (

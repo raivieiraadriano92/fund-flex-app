@@ -1,4 +1,4 @@
-export interface MonthlyData {
+export interface MonthlyOverviewData {
   month: string;
   income: number;
   expense: number;
