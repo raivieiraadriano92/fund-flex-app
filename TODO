@@ -4,5 +4,9 @@
   <!-- - repeat transaction for a period -->
   <!-- - implement period filter -->
 - reminders/notifications
+
   - recurring transaction finished
   - individual transactions
+
+- enable google login local
+  - set clientids for prod and local/dev

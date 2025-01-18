@@ -345,133 +345,135 @@ export default function TransactionFormScreen() {
             name="goal_id"
           />
 
-          <Controller
-            control={control}
-            render={({ field: { onChange, value } }) => {
-              const handleOnChange = (nextValue: boolean) => {
-                onChange(nextValue);
+          <View className="gap-6 rounded-lg bg-primary-foreground p-4">
+            <Controller
+              control={control}
+              render={({ field: { onChange, value } }) => {
+                const handleOnChange = (nextValue: boolean) => {
+                  onChange(nextValue);
 
-                const startDate = datetime ? parseISO(datetime) : new Date();
+                  const startDate = datetime ? parseISO(datetime) : new Date();
 
-                setValue(
-                  "recurring",
-                  nextValue
-                    ? {
-                        frequency: "monthly",
-                        endDate: addMonths(startDate, 6).toISOString()
-                      }
-                    : undefined
-                );
-              };
+                  setValue(
+                    "recurring",
+                    nextValue
+                      ? {
+                          frequency: "monthly",
+                          endDate: addMonths(startDate, 6).toISOString()
+                        }
+                      : undefined
+                  );
+                };
 
-              return (
-                <View className="flex-row items-center justify-between">
-                  <Label
-                    nativeID="isRecurring"
-                    onPress={() => handleOnChange(!value)}
-                  >
-                    Recurring Transaction
-                  </Label>
-                  <Switch
-                    trackColor={{ true: theme.colors.primary }}
-                    onValueChange={handleOnChange}
-                    value={value}
-                  />
-                </View>
-              );
-            }}
-            name="isRecurring"
-          />
-
-          {/* Recurring Options */}
-          {isRecurring && (
-            <>
-              <Controller
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <View className="gap-2">
-                    <Label>Frequency</Label>
-                    <SegmentedControl
-                      values={frequencyOptions}
-                      selectedIndex={frequencyOptions.indexOf(
-                        value?.charAt(0).toUpperCase() + value?.slice(1)
-                      )}
-                      onChange={(event) => {
-                        onChange(
-                          frequencyOptions[
-                            event.nativeEvent.selectedSegmentIndex
-                          ].toLowerCase()
-                        );
-                      }}
-                    />
-                  </View>
-                )}
-                name="recurring.frequency"
-              />
-
-              <View className="gap-2">
-                <Label>End By</Label>
-                <SegmentedControl
-                  values={["End Date", "Occurrences"]}
-                  selectedIndex={endDate ? 0 : 1}
-                  onChange={(event) => {
-                    if (event.nativeEvent.selectedSegmentIndex === 0) {
-                      setValue("recurring.occurrences", undefined);
-
-                      setValue(
-                        "recurring.endDate",
-                        addMonths(new Date(), 6).toISOString()
-                      );
-                    } else {
-                      setValue("recurring.endDate", undefined);
-
-                      setValue("recurring.occurrences", 6);
-                    }
-                  }}
-                />
-              </View>
-
-              {endDate ? (
-                <Controller
-                  control={control}
-                  key="recurring.endDate"
-                  render={({
-                    field: { onChange, value },
-                    fieldState: { error }
-                  }) => (
-                    <DatePicker
-                      error={error?.message}
-                      onChange={onChange}
-                      placeholder="Select date"
+                return (
+                  <View className="flex-row items-center justify-between">
+                    <Label
+                      nativeID="isRecurring"
+                      onPress={() => handleOnChange(!value)}
+                    >
+                      Recurring Transaction
+                    </Label>
+                    <Switch
+                      trackColor={{ true: theme.colors.primary }}
+                      onValueChange={handleOnChange}
                       value={value}
                     />
-                  )}
-                  name="recurring.endDate"
-                />
-              ) : (
+                  </View>
+                );
+              }}
+              name="isRecurring"
+            />
+
+            {/* Recurring Options */}
+            {isRecurring && (
+              <>
                 <Controller
                   control={control}
-                  key="recurring.occurrences"
-                  render={({
-                    field: { onChange, onBlur, value },
-                    fieldState: { error }
-                  }) => (
-                    <Input
-                      error={error?.message}
-                      keyboardType="number-pad"
-                      onBlur={onBlur}
-                      onChangeText={(newValue) =>
-                        onChange(newValue ? parseInt(newValue, 10) : 0)
-                      }
-                      placeholder="Number of times"
-                      value={`${value}`}
-                    />
+                  render={({ field: { onChange, value } }) => (
+                    <View className="gap-2">
+                      <Label>Frequency</Label>
+                      <SegmentedControl
+                        values={frequencyOptions}
+                        selectedIndex={frequencyOptions.indexOf(
+                          value?.charAt(0).toUpperCase() + value?.slice(1)
+                        )}
+                        onChange={(event) => {
+                          onChange(
+                            frequencyOptions[
+                              event.nativeEvent.selectedSegmentIndex
+                            ].toLowerCase()
+                          );
+                        }}
+                      />
+                    </View>
                   )}
-                  name="recurring.occurrences"
+                  name="recurring.frequency"
                 />
-              )}
-            </>
-          )}
+
+                <View className="gap-2">
+                  <Label>End By</Label>
+                  <SegmentedControl
+                    values={["End Date", "Occurrences"]}
+                    selectedIndex={endDate ? 0 : 1}
+                    onChange={(event) => {
+                      if (event.nativeEvent.selectedSegmentIndex === 0) {
+                        setValue("recurring.occurrences", undefined);
+
+                        setValue(
+                          "recurring.endDate",
+                          addMonths(new Date(), 6).toISOString()
+                        );
+                      } else {
+                        setValue("recurring.endDate", undefined);
+
+                        setValue("recurring.occurrences", 6);
+                      }
+                    }}
+                  />
+                </View>
+
+                {endDate ? (
+                  <Controller
+                    control={control}
+                    key="recurring.endDate"
+                    render={({
+                      field: { onChange, value },
+                      fieldState: { error }
+                    }) => (
+                      <DatePicker
+                        error={error?.message}
+                        onChange={onChange}
+                        placeholder="Select date"
+                        value={value}
+                      />
+                    )}
+                    name="recurring.endDate"
+                  />
+                ) : (
+                  <Controller
+                    control={control}
+                    key="recurring.occurrences"
+                    render={({
+                      field: { onChange, onBlur, value },
+                      fieldState: { error }
+                    }) => (
+                      <Input
+                        error={error?.message}
+                        keyboardType="number-pad"
+                        onBlur={onBlur}
+                        onChangeText={(newValue) =>
+                          onChange(newValue ? parseInt(newValue, 10) : 0)
+                        }
+                        placeholder="Number of times"
+                        value={`${value}`}
+                      />
+                    )}
+                    name="recurring.occurrences"
+                  />
+                )}
+              </>
+            )}
+          </View>
 
           <Button
             onPress={handleSubmit(onSubmit)}
