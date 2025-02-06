@@ -1,4 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+import NetInfo from "@react-native-community/netinfo";
 
 import {
   pushLocalCategoryDeletes,
@@ -33,23 +35,29 @@ const pushLocalChanges = async () => {
   // push category and goal deletes last
   await Promise.all([pushLocalCategoryDeletes(), pushLocalGoalDeletes()]);
 
-  // setIsLoading(false);
-
   console.info("✅ Data synced!");
 };
 
 export function SyncDataProvider({ children }: { children: React.ReactNode }) {
   const session = useAuthStore((state) => state.session);
 
-  // const [isLoading, setIsLoading] = useState(true);
+  const [isConnected, setConnected] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setConnected(!!state.isConnected);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // call pushLocalChanges when the user logs in
   // this will push any local changes to the server immediately after the user logs in
   useEffect(() => {
-    if (session?.user.id) {
+    if (isConnected && session?.user.id) {
       pushLocalChanges();
     }
-  }, [session?.user.id]);
+  }, [isConnected, session?.user.id]);
 
   // call pushLocalChanges every SYNC_TIMEOUT milliseconds
   useEffect(() => {
@@ -59,8 +67,12 @@ export function SyncDataProvider({ children }: { children: React.ReactNode }) {
       }
     }, SYNC_TIMEOUT);
 
+    if (!isConnected) {
+      clearInterval(interval);
+    }
+
     return () => clearInterval(interval);
-  }, [session?.user.id]);
+  }, [isConnected, session?.user.id]);
 
   return children;
 }
