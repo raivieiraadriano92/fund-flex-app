@@ -1,8 +1,17 @@
 <!-- - populate local db on login with remote data -->
 
-- split transaction amount goal
+- check if user if online before try to push local change to remote
+
+<!-- - handle delete goals and link to transactions_goals local -->
+
+<!-- - validate goals total and repeated in transactions screen -->
+
+<!-- - calculate goals progress in goals screen -->
+
+<!-- - split transaction amount goal -->
   <!-- - repeat transaction for a period -->
   <!-- - implement period filter -->
+
 - reminders/notifications
 
   - recurring transaction finished

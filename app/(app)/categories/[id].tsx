@@ -164,6 +164,7 @@ export default function CategoryFormScreen() {
           </View>
 
           <Input
+            autoCapitalize="words"
             autoFocus
             error={form.formState.errors.title?.message}
             label="Title"

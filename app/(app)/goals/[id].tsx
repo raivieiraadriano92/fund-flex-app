@@ -83,7 +83,7 @@ export default function GoalFormScreen() {
 
             const hasTransactions = useTransactionsStore
               .getState()
-              .transactions.some((t) => t.goal_id === id);
+              .transactions.some((t) => t.goals?.some((g) => g.goal_id === id));
 
             if (hasTransactions) {
               throw new Error(
@@ -163,6 +163,7 @@ export default function GoalFormScreen() {
           </View>
 
           <Input
+            autoCapitalize="words"
             error={form.formState.errors.title?.message}
             label="Title"
             onChangeText={(value) => form.setValue("title", value)}

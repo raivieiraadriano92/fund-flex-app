@@ -97,15 +97,12 @@ export type Database = {
       profiles: {
         Row: {
           id: string;
-          marked_to_delete: boolean | null;
         };
         Insert: {
           id: string;
-          marked_to_delete?: boolean | null;
         };
         Update: {
           id?: string;
-          marked_to_delete?: boolean | null;
         };
         Relationships: [];
       };
@@ -115,7 +112,6 @@ export type Database = {
           category_id: string;
           created_at: string | null;
           datetime: string;
-          goal_id: string | null;
           id: string;
           recurring_id: string | null;
           title: string;
@@ -127,8 +123,7 @@ export type Database = {
           amount: number;
           category_id: string;
           created_at?: string | null;
-          datetime?: string;
-          goal_id?: string | null;
+          datetime: string;
           id?: string;
           recurring_id?: string | null;
           title: string;
@@ -141,7 +136,6 @@ export type Database = {
           category_id?: string;
           created_at?: string | null;
           datetime?: string;
-          goal_id?: string | null;
           id?: string;
           recurring_id?: string | null;
           title?: string;
@@ -156,12 +150,38 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "categories";
             referencedColumns: ["id"];
-          },
+          }
+        ];
+      };
+      transactions_goals: {
+        Row: {
+          amount: number;
+          goal_id: string;
+          transaction_id: string;
+        };
+        Insert: {
+          amount: number;
+          goal_id: string;
+          transaction_id: string;
+        };
+        Update: {
+          amount?: number;
+          goal_id?: string;
+          transaction_id?: string;
+        };
+        Relationships: [
           {
-            foreignKeyName: "transactions_goal_id_fkey";
+            foreignKeyName: "transactions_goals_goal_id_fkey";
             columns: ["goal_id"];
             isOneToOne: false;
             referencedRelation: "goals";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "transactions_goals_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
             referencedColumns: ["id"];
           }
         ];
@@ -171,41 +191,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      calculate_balance: {
-        Args: {
-          user_id_param: string;
-          start_date?: string;
-          end_date?: string;
-        };
-        Returns: number;
-      };
-      get_category_breakdown: {
-        Args: {
-          user_id_param: string;
-          start_date: string;
-          end_date: string;
-        };
-        Returns: {
-          category_id: string;
-          category_title: string;
-          category_emoji: string;
-          total: number;
-          percentage: number;
-        }[];
-      };
-      get_monthly_overview: {
-        Args: {
-          user_id_param: string;
-          start_date: string;
-          end_date: string;
-        };
-        Returns: {
-          month: string;
-          income: number;
-          expense: number;
-          net: number;
-        }[];
-      };
+      [_ in never]: never;
     };
     Enums: {
       transaction_type: "expense" | "income";

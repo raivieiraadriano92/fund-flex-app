@@ -11,6 +11,8 @@ import {
 } from "~/core/api/transactions";
 import { useAuthStore } from "~/store/auth";
 
+const SYNC_TIMEOUT = +(process.env.EXPO_PUBLIC_SYNC_TIMEOUT || 60000);
+
 const pushLocalChanges = async () => {
   console.info("🔥 Syncing data...");
 
@@ -41,12 +43,21 @@ export function SyncDataProvider({ children }: { children: React.ReactNode }) {
 
   // const [isLoading, setIsLoading] = useState(true);
 
+  // call pushLocalChanges when the user logs in
+  // this will push any local changes to the server immediately after the user logs in
+  useEffect(() => {
+    if (session?.user.id) {
+      pushLocalChanges();
+    }
+  }, [session?.user.id]);
+
+  // call pushLocalChanges every SYNC_TIMEOUT milliseconds
   useEffect(() => {
     const interval = setInterval(async () => {
       if (session?.user.id) {
         pushLocalChanges();
       }
-    }, 60000);
+    }, SYNC_TIMEOUT);
 
     return () => clearInterval(interval);
   }, [session?.user.id]);

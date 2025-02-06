@@ -1,6 +1,6 @@
 import Storage from "expo-sqlite/kv-store";
 
-import { Transaction } from "../types/transaction";
+import { TransactionWithGoals } from "../types/transaction";
 
 import { supabase } from "./supabase";
 
@@ -14,7 +14,7 @@ const getAndParseTransaction = async (key: string) => {
     return null;
   }
 
-  return JSON.parse(transaction) as Transaction;
+  return JSON.parse(transaction) as TransactionWithGoals;
 };
 
 export const pushLocalTransactionUpserts = async () => {
@@ -42,12 +42,41 @@ export const pushLocalTransactionUpserts = async () => {
     if (upsertData.length) {
       const upsertResponse = await supabase
         .from("transactions")
-        .upsert(upsertData);
+        // remove goals from the transaction data before upserting
+        .upsert(upsertData.map(({ goals, ...transaction }) => transaction));
 
       if (upsertResponse.error) {
         throw upsertResponse.error;
       }
 
+      // remap the goals to include the transaction_id
+      const transactionsGoals = upsertData.flatMap(({ id, goals }) =>
+        (goals || []).map((goal) => ({ ...goal, transaction_id: id }))
+      );
+
+      // remove all existing goals for the transactions being upserted
+      const removeTransactionsGoalsResponse = await supabase
+        .from("transactions_goals")
+        .delete()
+        .in(
+          "transaction_id",
+          upsertData.map(({ id }) => id)
+        );
+
+      if (removeTransactionsGoalsResponse.error) {
+        throw removeTransactionsGoalsResponse.error;
+      }
+
+      // insert the new goals
+      const insertTransactionsGoalsResponse = await supabase
+        .from("transactions_goals")
+        .insert(transactionsGoals);
+
+      if (insertTransactionsGoalsResponse.error) {
+        throw insertTransactionsGoalsResponse.error;
+      }
+
+      // remove the transactions from the sync queue
       useTransactionsStore.setState((state) => ({
         upsertSyncQueue: state.upsertSyncQueue.filter(
           (id) => !upsertData.some((transaction) => transaction.id === id)

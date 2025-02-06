@@ -8,7 +8,8 @@ import { useAuthStore } from "./auth";
 
 import type {
   Transaction,
-  TransactionFormData
+  TransactionFormData,
+  TransactionWithGoals
 } from "~/core/types/transaction";
 
 import { supabase } from "~/core/api/supabase";
@@ -16,7 +17,7 @@ import { generateId } from "~/core/utils/id";
 import { sortTransactionsByDate } from "~/core/utils/sort";
 
 interface TransactionsState {
-  transactions: Transaction[];
+  transactions: TransactionWithGoals[];
   balance: number; // Total balance of all transactions til today
 
   // Sync queues

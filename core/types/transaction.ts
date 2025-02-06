@@ -8,6 +8,13 @@ export type TransactionTypeWithAll =
 
 export type Transaction = Database["public"]["Tables"]["transactions"]["Row"];
 
+export type TransactionWithGoals = Transaction & {
+  goals?: {
+    goal_id: string;
+    amount: number;
+  }[];
+};
+
 export type TransactionInsert =
   Database["public"]["Tables"]["transactions"]["Insert"];
 
@@ -26,6 +33,10 @@ export type TransactionFormData = Omit<
     endDate?: string; // Either end date
     occurrences?: number; // Or number of occurrences
   };
+  goals?: {
+    goal_id: string;
+    amount: number;
+  }[];
 };
 
 export type TransactionFiltersFormData = {

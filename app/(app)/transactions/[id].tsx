@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTheme } from "@react-navigation/native";
@@ -19,6 +19,7 @@ import type { TransactionFormData } from "~/core/types/transaction";
 
 import { CategoryPicker } from "~/components/features/categories/category-picker";
 import { GoalPicker } from "~/components/features/goals/goal-picker";
+import { Amount } from "~/components/ui/amount";
 import { Button } from "~/components/ui/button";
 import { DatePicker } from "~/components/ui/date-picker";
 import { Input } from "~/components/ui/input";
@@ -34,6 +35,7 @@ import { formatCurrency, getCurrencyByCode } from "~/core/utils/currency";
 import { generateRecurringDates } from "~/core/utils/generate-recurring-dates";
 import { generateId } from "~/core/utils/id";
 import { transactionFormSchema } from "~/core/validations/transaction";
+import { PlusIcon, TrashIcon } from "~/lib/icons";
 import { useCategoriesStore } from "~/store/categories";
 import { useCurrencyStore } from "~/store/currency";
 import { useGoalsStore } from "~/store/goals";
@@ -69,15 +71,118 @@ export default function TransactionFormScreen() {
 
   const selectedCurrency = getCurrencyByCode(currencyCode);
 
-  const { control, handleSubmit, setValue, watch } =
+  const { control, handleSubmit, setValue, watch, getValues } =
     useForm<TransactionFormData>({
       resolver: zodResolver(transactionFormSchema),
       defaultValues: transaction ?? {
         type: "expense",
         datetime: new Date().toISOString(),
-        isRecurring: false
+        isRecurring: false,
+        goals: []
       }
     });
+
+  const handleDelete = async () => {
+    const handleDeleteTransaction = async (deleteFutureTransactions?: {
+      recurringId: string;
+      startDate: string;
+    }) => {
+      try {
+        setIsDeleting(true);
+
+        await deleteTransaction(id, deleteFutureTransactions);
+
+        router.back();
+
+        toast.success("Transaction deleted successfully.");
+      } catch (_error) {
+        toast.error(
+          "An error occurred while deleting the transaction. Please try again."
+        );
+      } finally {
+        setIsDeleting(false);
+      }
+    };
+
+    if (transaction?.recurring_id) {
+      Alert.alert(
+        "Delete Recurring Transaction",
+        "This is part of a recurring transaction. Would you like to delete:",
+        [
+          {
+            text: "Cancel",
+            style: "cancel"
+          },
+          {
+            text: "This Transaction Only",
+            onPress: async () => handleDeleteTransaction()
+          },
+          {
+            text: "This and Future Transactions",
+            onPress: async () =>
+              handleDeleteTransaction({
+                recurringId: transaction.recurring_id!,
+                startDate: transaction.datetime
+              })
+          }
+        ]
+      );
+
+      return;
+    }
+
+    Alert.alert("Delete transaction", "Are you sure?", [
+      {
+        text: "Cancel",
+        style: "cancel"
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => handleDeleteTransaction()
+      }
+    ]);
+  };
+
+  const type = watch("type");
+
+  const isRecurring = watch("isRecurring");
+
+  const endDate = watch("recurring.endDate");
+
+  const datetime = watch("datetime");
+
+  const formGoals = watch("goals");
+
+  const formAmount = watch("amount");
+
+  /**
+   * @todo
+   * https://github.com/orgs/react-hook-form/discussions/8516
+   * Refactor to use RHF's validateSchema
+   */
+  const goalsError = useMemo(() => {
+    if (!formGoals) {
+      return;
+    }
+
+    // Check for duplicate goals
+    const goalIds = formGoals.map((g) => g.goal_id);
+
+    if (new Set(goalIds).size !== goalIds.length) {
+      return "Duplicate goals are not allowed";
+    }
+
+    // Check if total amount matches transaction amount
+    const totalGoalAmount = formGoals.reduce(
+      (sum, goal) => sum + goal.amount,
+      0
+    );
+
+    if (totalGoalAmount >= formAmount) {
+      return "Total goal amounts cannot exceed transaction amount";
+    }
+  }, [formAmount, formGoals]);
 
   const onSubmit = async ({
     isRecurring,
@@ -85,6 +190,10 @@ export default function TransactionFormScreen() {
     ...data
   }: TransactionFormData) => {
     try {
+      if (goalsError) {
+        return;
+      }
+
       setIsLoading(true);
 
       if (isEditing) {
@@ -129,76 +238,6 @@ export default function TransactionFormScreen() {
       setIsLoading(false);
     }
   };
-
-  const handleDelete = async () => {
-    const handleDeleteTransaction = async (deleteFutureTransactions?: {
-      recurringId: string;
-      startDate: string;
-    }) => {
-      try {
-        setIsDeleting(true);
-
-        await deleteTransaction(id, deleteFutureTransactions);
-
-        router.back();
-
-        toast.success("Transaction deleted successfully.");
-      } catch (_error) {
-        toast.error(
-          "An error occurred while deleting the transaction. Please try again."
-        );
-      } finally {
-        setIsDeleting(false);
-      }
-    };
-
-    if (transaction?.recurring_id) {
-      Alert.alert(
-        "Delete Recurring Transaction",
-        "This is part of a recurring transaction. Would you like to delete:",
-        [
-          {
-            text: "Cancel",
-            style: "cancel"
-          },
-          {
-            text: "This Transaction Only",
-            onPress: async () => handleDeleteTransaction()
-          },
-          {
-            text: "This and Future Transactions",
-            onPress: async () =>
-              handleDeleteTransaction({
-                recurringId: transaction.recurring_id,
-                startDate: transaction.datetime
-              })
-          }
-        ]
-      );
-
-      return;
-    }
-
-    Alert.alert("Delete transaction", "Are you sure?", [
-      {
-        text: "Cancel",
-        style: "cancel"
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => handleDeleteTransaction()
-      }
-    ]);
-  };
-
-  const type = watch("type");
-
-  const isRecurring = watch("isRecurring");
-
-  const endDate = watch("recurring.endDate");
-
-  const datetime = watch("datetime");
 
   return (
     <>
@@ -283,6 +322,7 @@ export default function TransactionFormScreen() {
               fieldState: { error }
             }) => (
               <Input
+                autoCapitalize="words"
                 error={error?.message}
                 label="Title"
                 onBlur={onBlur}
@@ -330,19 +370,150 @@ export default function TransactionFormScreen() {
           <Controller
             control={control}
             render={({ field: { onChange, value }, fieldState: { error } }) => {
-              const selectedGoal = goals.find(
-                (category) => category.id === value
-              );
+              const maxAmount = formAmount ?? 0;
+
+              const availableAmount =
+                maxAmount -
+                  (value?.reduce((sum, goal) => sum + goal.amount, 0) ?? 0) ||
+                0;
+
+              const handleOnChange = (nextValue: boolean) => {
+                onChange(
+                  nextValue
+                    ? [
+                        {
+                          amount: null,
+                          goal_id: ""
+                        }
+                      ]
+                    : []
+                );
+              };
 
               return (
-                <GoalPicker
-                  error={error?.message}
-                  onChange={onChange}
-                  selectedGoal={selectedGoal}
-                />
+                <View className="gap-6 rounded-lg bg-primary-foreground p-4">
+                  <View className="gap-2">
+                    <View className="flex-row items-center justify-between">
+                      <Label
+                        nativeID="goals"
+                        onPress={() => handleOnChange(!value)}
+                      >
+                        Goals
+                      </Label>
+                      <Switch
+                        trackColor={{ true: theme.colors.primary }}
+                        onValueChange={handleOnChange}
+                        value={!!value?.length}
+                      />
+                    </View>
+                    {!!goalsError && (
+                      <Small className="text-destructive">{goalsError}</Small>
+                    )}
+                  </View>
+                  {!!value?.length && (
+                    <Text className="text-muted-foreground">
+                      Available: <Amount amount={availableAmount} />
+                    </Text>
+                  )}
+                  {value?.map((_, index) => {
+                    const selectedGoal = goals.find(
+                      (g) => g.id === value[index].goal_id
+                    );
+
+                    return (
+                      <View
+                        className="flex-row items-center justify-between gap-6"
+                        key={index}
+                      >
+                        <GoalPicker
+                          className="w-1/3"
+                          error={error?.[index]?.goal_id?.message}
+                          hideLabel
+                          index={index}
+                          onChange={(goalId) =>
+                            onChange(
+                              value.map((goal, i) =>
+                                i === index
+                                  ? { ...goal, goal_id: goalId }
+                                  : goal
+                              )
+                            )
+                          }
+                          selectedGoal={selectedGoal}
+                        />
+                        <View className="flex-1 items-end gap-2">
+                          <CurrencyInput
+                            className="native:h-12 h-10 items-center text-2xl font-bold text-foreground"
+                            precision={selectedCurrency?.decimalPlaces}
+                            keyboardType="number-pad"
+                            onChangeValue={(amountValue) =>
+                              onChange(
+                                value?.map((goal, i) =>
+                                  i === index
+                                    ? { ...goal, amount: amountValue ?? 0 }
+                                    : goal
+                                )
+                              )
+                            }
+                            placeholder={formatCurrency(0, currencyCode)}
+                            placeholderClassName="text-muted-foreground"
+                            prefix={
+                              selectedCurrency?.symbolPosition === "prefix"
+                                ? `${selectedCurrency?.symbol}${selectedCurrency?.spaceAfterSymbol ? " " : ""}`
+                                : ""
+                            }
+                            suffix={
+                              selectedCurrency?.symbolPosition === "suffix"
+                                ? `${selectedCurrency?.spaceAfterSymbol ? " " : ""}${selectedCurrency?.symbol}`
+                                : ""
+                            }
+                            style={{ lineHeight: 24 }}
+                            value={value[index].amount}
+                          />
+                          {!!error?.[index]?.amount?.message && (
+                            <Small className="text-destructive">
+                              {error?.[index]?.amount?.message}
+                            </Small>
+                          )}
+                        </View>
+                        {value.length > 1 && (
+                          <Button
+                            onPress={() =>
+                              onChange(value.filter((_, i) => i !== index))
+                            }
+                            size="sm"
+                            variant="destructive"
+                          >
+                            <TrashIcon
+                              className="text-destructive-foreground"
+                              size={16}
+                            />
+                          </Button>
+                        )}
+                      </View>
+                    );
+                  })}
+                  {!!value?.length && (
+                    <Button
+                      onPress={() =>
+                        onChange([
+                          ...value,
+                          {
+                            amount: null,
+                            goal_id: ""
+                          }
+                        ])
+                      }
+                      size="sm"
+                      variant="outline"
+                    >
+                      <PlusIcon className="text-primary" />
+                    </Button>
+                  )}
+                </View>
               );
             }}
-            name="goal_id"
+            name="goals"
           />
 
           <View className="gap-6 rounded-lg bg-primary-foreground p-4">

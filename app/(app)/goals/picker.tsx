@@ -12,8 +12,9 @@ import { useGoalsStore } from "~/store/goals";
 export default function GoalPickerScreen() {
   const goals = useGoalsStore((state) => state.goals);
 
-  const { defaultValue } = useLocalSearchParams<{
+  const { defaultValue, index } = useLocalSearchParams<{
     defaultValue?: string;
+    index?: string;
   }>();
 
   const [selectedGoalId, setSelectedGoalId] = useState<string | undefined>(
@@ -25,7 +26,7 @@ export default function GoalPickerScreen() {
       return;
     }
 
-    events.emit("goal:selected", selectedGoalId);
+    events.emit("goal:selected", selectedGoalId, +(index || 0));
 
     router.back();
   };

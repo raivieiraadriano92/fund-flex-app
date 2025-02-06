@@ -26,20 +26,15 @@ export function GoalCard({
   onPress,
   ...props
 }: GoalCardProps) {
-  const progress = useMemo(
-    () => Math.min((currentAmount / goal.amount) * 100, 100),
-    [currentAmount, goal.amount]
-  );
-
   const progressColors = useMemo(() => {
-    if (progress === 0) return ["bg-transparent", ""];
+    if (goal.progress === 0) return ["bg-transparent", ""];
 
-    if (progress >= 75) return ["bg-green-500", "bg-green-100"];
+    if (goal.progress >= 75) return ["bg-green-500", "bg-green-100"];
 
-    if (progress >= 50) return ["bg-yellow-500", "bg-yellow-100"];
+    if (goal.progress >= 50) return ["bg-yellow-500", "bg-yellow-100"];
 
     return ["bg-red-500", "bg-red-100"];
-  }, [progress]);
+  }, [goal.progress]);
 
   return (
     <TouchableOpacity
@@ -72,11 +67,11 @@ export function GoalCard({
       <Progress
         className={`${progressColors[1]}`}
         indicatorClassName={`${progressColors[0]}`}
-        value={progress}
+        value={goal.progress}
       />
       <Muted>
         <Amount amount={currentAmount} as={Muted} />
-        {` (${progress.toFixed(0)}%)`}
+        {` (${goal.progress.toFixed(0)}%)`}
       </Muted>
     </TouchableOpacity>
   );

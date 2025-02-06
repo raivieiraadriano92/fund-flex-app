@@ -4,7 +4,7 @@ import { TransactionFiltersFormData } from "../types/transaction";
 
 interface Events {
   "category:selected": (categoryId: string) => void;
-  "goal:selected": (goalId: string) => void;
+  "goal:selected": (goalId: string, index?: number) => void;
   "transaction:applyFilter": (filters: TransactionFiltersFormData) => void;
 }
 
