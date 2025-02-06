@@ -1,6 +1,6 @@
 <!-- - populate local db on login with remote data -->
 
-- check if user if online before try to push local change to remote
+<!-- - check if user if online before try to push local change to remote -->
 
 <!-- - handle delete goals and link to transactions_goals local -->
 

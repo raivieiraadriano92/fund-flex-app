@@ -26,8 +26,8 @@ export function GoalList({
   const transactions = useTransactionsStore((state) =>
     state.transactions
       .filter((transaction) => transaction.goals?.length)
-      .flatMap(({ id, goals }) =>
-        (goals || []).map((goal) => ({ ...goal, transaction_id: id }))
+      .flatMap(({ id, type, goals }) =>
+        (goals || []).map((goal) => ({ ...goal, transaction_id: id, type }))
       )
   );
 
@@ -39,7 +39,11 @@ export function GoalList({
         );
 
         const currentAmount = transactionsForGoal.reduce(
-          (sum, transaction) => sum + transaction.amount,
+          (sum, transaction) =>
+            transaction.type === "income"
+              ? sum + transaction.amount
+              : sum - transaction.amount,
+          // (sum, transaction) => sum + transaction.amount,
           0
         );
 
