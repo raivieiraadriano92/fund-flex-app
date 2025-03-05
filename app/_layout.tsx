@@ -11,7 +11,8 @@ import {
 } from "@react-navigation/native";
 import * as Sentry from "@sentry/react-native";
 import { isRunningInExpoGo } from "expo";
-import { Slot, SplashScreen, useNavigationContainerRef } from "expo-router";
+import { Slot, useNavigationContainerRef } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -87,6 +88,11 @@ const DARK_THEME: Theme = {
 
 // Keep splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
+
+SplashScreen.setOptions({
+  duration: 500,
+  fade: true
+});
 
 function AuthProtection() {
   const { isInitialized } = useProtectedRoute();

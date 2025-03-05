@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { SplashScreen } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 
 import { useAuthStore } from "~/store/auth";
 import { useCategoriesStore } from "~/store/categories";
