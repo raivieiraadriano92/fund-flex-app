@@ -73,7 +73,8 @@
     "vexo-analytics": "^1.4.4",
     "zod": "^3.24.1",
     "zustand": "^4.5.1",
-    "expo-splash-screen": "~0.29.22"
+    "expo-splash-screen": "~0.29.22",
+    "expo-background-task": "~0.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
