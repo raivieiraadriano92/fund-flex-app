@@ -23,16 +23,8 @@ import { vexo } from "vexo-analytics";
 
 import { AuthProvider } from "~/components/providers/auth-provider";
 import { DataProvider } from "~/components/providers/data-provider";
-import {
-  pushLocalCategoryDeletes,
-  pushLocalCategoryUpserts
-} from "~/core/api/categories";
-import { pushLocalGoalDeletes, pushLocalGoalUpserts } from "~/core/api/goals";
-import {
-  pushLocalTransactionDeletes,
-  pushLocalTransactionUpserts
-} from "~/core/api/transactions";
 import { useProtectedRoute } from "~/core/hooks/use-protected-route";
+import { pushLocalDataToRemote } from "~/core/utils/backup";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
 
@@ -111,31 +103,14 @@ const SYNC_DATA_BACKGROUND_TASK_IDENTIFIER = "sync-data-task";
 // Note: This needs to be called in the global scope, not in a React component.
 TaskManager.defineTask(SYNC_DATA_BACKGROUND_TASK_IDENTIFIER, async () => {
   try {
-    console.info("🔥 Syncing data...");
+    await pushLocalDataToRemote();
 
-    // push local changes in sequence to avoid data conflicts
-    // since transactions depend on categories and goals, we need to push them first
-    await Promise.all([pushLocalCategoryUpserts(), pushLocalGoalUpserts()]);
-
-    // now we can push transactions safely since categories and goals are already pushed
-    await Promise.all([
-      pushLocalTransactionUpserts(),
-      // we push the transaction deletes before the category and goal deletes to remove the foreign key constraints
-      // so the categories and goals can be deleted without any issues
-      pushLocalTransactionDeletes()
-    ]);
-
-    // push category and goal deletes last
-    await Promise.all([pushLocalCategoryDeletes(), pushLocalGoalDeletes()]);
-
-    console.info("✅ Data synced!");
+    return BackgroundTask.BackgroundTaskResult.Success;
   } catch (error) {
     console.error("Failed to execute the background task:", error);
 
     return BackgroundTask.BackgroundTaskResult.Failed;
   }
-
-  return BackgroundTask.BackgroundTaskResult.Success;
 });
 
 // 2. Register the task at some point in your app by providing the same name

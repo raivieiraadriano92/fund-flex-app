@@ -5,8 +5,11 @@ import { Linking, ScrollView, TouchableOpacity, View } from "react-native";
 import { DeleteAccountButton } from "~/components/features/auth/delete-account-button";
 import { SignOutButton } from "~/components/features/auth/sign-out-button";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
+import { Text } from "~/components/ui/text";
 import { Muted, P } from "~/components/ui/typography";
+import { useSyncQueueLength } from "~/core/hooks/use-sync-queue-length";
 import { redirectToWriteReview } from "~/core/services/app-review";
 import {
   GlobeLockIcon,
@@ -17,12 +20,15 @@ import {
   HelpCircleIcon,
   FileTextIcon,
   StarIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  RefreshCcwIcon
 } from "~/lib/icons";
 import { useColorScheme } from "~/lib/useColorScheme";
 
 export default function SettingsScreen() {
   const { isDarkColorScheme } = useColorScheme();
+
+  const totalSyncQueueLength = useSyncQueueLength();
 
   const sections = [
     {
@@ -31,7 +37,7 @@ export default function SettingsScreen() {
         {
           label: "Theme",
           icon: isDarkColorScheme ? MoonIcon : SunIcon,
-          onPress: () => router.push("settings/theme")
+          onPress: () => router.push("/settings/theme")
         },
         {
           label: "Language",
@@ -41,7 +47,13 @@ export default function SettingsScreen() {
         {
           label: "Currency",
           icon: DollarSignIcon,
-          onPress: () => router.push("settings/currency")
+          onPress: () => router.push("/settings/currency")
+        },
+        {
+          label: "Backup",
+          icon: RefreshCcwIcon,
+          onPress: () => router.push("/settings/backup"),
+          badge: totalSyncQueueLength
         }
       ]
     },
@@ -115,6 +127,11 @@ export default function SettingsScreen() {
                         </AvatarFallback>
                       </Avatar>
                       <P className="flex-1">{item.label}</P>
+                      {!!item.badge && (
+                        <Badge variant="destructive">
+                          <Text>{item.badge}</Text>
+                        </Badge>
+                      )}
                       <ChevronRightIcon className="text-muted-foreground" />
                     </TouchableOpacity>
                   </View>

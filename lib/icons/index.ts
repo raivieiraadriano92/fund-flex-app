@@ -26,12 +26,15 @@ import {
   ChevronRightIcon,
   PlusIcon,
   TrashIcon,
-  CirclePlusIcon
+  CirclePlusIcon,
+  RefreshCcwIcon
 } from "lucide-react-native";
 
 import { AppleIcon } from "./AppleIcon";
 import { GoogleIcon } from "./GoogleIcon";
 import { iconWithClassName } from "./iconWithClassName";
+
+iconWithClassName(RefreshCcwIcon);
 
 iconWithClassName(GlobeLockIcon);
 
@@ -96,6 +99,7 @@ iconWithClassName(GoogleIcon);
 iconWithClassName(UserIcon);
 
 export {
+  RefreshCcwIcon,
   GlobeLockIcon,
   CircleAlertIcon,
   WifiOffIcon,

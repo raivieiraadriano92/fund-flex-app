@@ -120,6 +120,14 @@ export default function AppLayout() {
           title: "🎨 Theme"
         }}
       />
+      <Stack.Screen
+        name="settings/backup"
+        options={{
+          // presentation: "modal",
+          headerLargeTitle: true,
+          title: "🔄 Backup"
+        }}
+      />
     </Stack>
   );
 }
